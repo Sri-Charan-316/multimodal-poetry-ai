@@ -105,12 +105,10 @@ try:
     # Initialize global model variables
     model = None
     tokenizer = None
-    _dbg("✅ AI model dependencies available")
 except ImportError as e:
     AI_MODEL_AVAILABLE = False
     model = None
     tokenizer = None
-    _dbg(f"⚠️ AI model not available: {e}. Using template generation.")
 
 # Additional imports for enhanced features
 import json
