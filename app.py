@@ -783,6 +783,41 @@ st.set_page_config(
     layout="wide"
 )
 
+# Support embed mode (hide Streamlit chrome when ?embed=true)
+def apply_embed_mode():
+    """Hide Streamlit header/footer/toolbar when the URL contains ?embed=true."""
+    try:
+        # Prefer modern API if available, else fall back
+        qp = getattr(st, "query_params", None)
+        if qp is None:
+            qp = st.experimental_get_query_params()
+
+        embed_val = None
+        if isinstance(qp, dict):
+            embed_val = qp.get("embed", False)
+        elif qp is not None:
+            embed_val = False
+        
+        if isinstance(embed_val, list):
+            embed_val = embed_val[0] if embed_val else ""
+        
+        embed = str(embed_val).lower() in ("1", "true", "yes", "y")
+
+        if embed:
+            st.markdown(
+                """
+                <style>
+                  header, footer, [data-testid="stToolbar"] { display: none !important; }
+                </style>
+                """,
+                unsafe_allow_html=True,
+            )
+    except Exception:
+        # Best-effort only; never block the app
+        pass
+
+apply_embed_mode()
+
 # Theming: inject our minimal cartoon CSS
 def inject_theme_css():
         try:
@@ -1051,7 +1086,10 @@ def translate_text(text, target_language):
             "Chinese": "zh-CN",
             "Arabic": "ar",
             "Hindi": "hi",
-            "Telugu": "te"
+            "Telugu": "te",
+            "Malayalam": "ml",
+            "Kannada": "kn",
+            "Tamil": "ta",
         }
         
         if target_language != "English" and target_language in lang_codes:
@@ -1428,7 +1466,8 @@ def create_musical_poetry_audio(text, language="en", speed=1.0, theme=None, audi
             "English": "en", "Spanish": "es", "French": "fr", 
             "German": "de", "Italian": "it", "Portuguese": "pt",
             "Russian": "ru", "Japanese": "ja", "Chinese": "zh-CN",
-            "Arabic": "ar", "Hindi": "hi", "Telugu": "te"
+            "Arabic": "ar", "Hindi": "hi", "Telugu": "te",
+            "Malayalam": "ml", "Kannada": "kn", "Tamil": "ta",
         }
 
         # Voice type mapping for different TLD (Top Level Domain) for gTTS
@@ -1570,7 +1609,8 @@ def create_simple_audio(text, language="en", speed=1.0, voice_type="neutral"):
             "English": "en", "Spanish": "es", "French": "fr", 
             "German": "de", "Italian": "it", "Portuguese": "pt",
             "Russian": "ru", "Japanese": "ja", "Chinese": "zh-CN",
-            "Arabic": "ar", "Hindi": "hi", "Telugu": "te"
+            "Arabic": "ar", "Hindi": "hi", "Telugu": "te",
+            "Malayalam": "ml", "Kannada": "kn", "Tamil": "ta",
         }
         
         # Voice type mapping for different TLD (Top Level Domain) for gTTS
@@ -1634,7 +1674,8 @@ def create_audio_from_text(text, language="en", speed=1.0, voice_type="neutral")
             "English": "en", "Spanish": "es", "French": "fr", 
             "German": "de", "Italian": "it", "Portuguese": "pt",
             "Russian": "ru", "Japanese": "ja", "Chinese": "zh-CN",
-            "Arabic": "ar", "Hindi": "hi", "Telugu": "te"
+            "Arabic": "ar", "Hindi": "hi", "Telugu": "te",
+            "Malayalam": "ml", "Kannada": "kn", "Tamil": "ta",
         }
         
         # Voice type mapping for different TLD (Top Level Domain) for gTTS
@@ -1712,7 +1753,10 @@ def generate_tts(text, target_language, speed=1.0, voice_type="neutral"):
         "Korean": "Korean",
         "Arabic": "Arabic",
         "Russian": "Russian",
-        "Hindi": "Hindi"
+        "Hindi": "Hindi",
+        "Malayalam": "Malayalam",
+        "Kannada": "Kannada",
+        "Tamil": "Tamil",
     }
     
     # Map to internal language names that create_audio_from_text expects
@@ -1745,7 +1789,8 @@ def transcribe_audio_file(file_bytes: bytes, mime_type: str, target_language: st
         "English": "en-US", "Spanish": "es-ES", "French": "fr-FR",
         "German": "de-DE", "Italian": "it-IT", "Portuguese": "pt-PT",
         "Russian": "ru-RU", "Japanese": "ja-JP", "Chinese": "zh-CN",
-        "Arabic": "ar", "Hindi": "hi-IN", "Telugu": "te-IN"
+        "Arabic": "ar", "Hindi": "hi-IN", "Telugu": "te-IN",
+        "Malayalam": "ml-IN", "Kannada": "kn-IN", "Tamil": "ta-IN",
     }
     recog_lang = asr_lang_map.get(target_language, "en-US")
 

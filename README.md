@@ -1,48 +1,80 @@
 # Multimodal Poetry AI Generator
 
 ## Overview
-A complete multimodal poetry generator with AI-powered text generation, multilingual translation, text-to-speech, and musical background mixing.
+A complete multimodal poetry generator with AI-powered text generation, multilingual translation, text-to-speech, and optional musical background mixing.
+
+Live app (clean viewer mode):
+- Add `?embed=true` to hide Streamlit chrome: `https://poetry-ai.streamlit.app/?embed=true`
 
 ## Features
-- 🎭 **AI Poetry Generation**: Uses mT5-small model for personalized, emotional poetry
-- 🌍 **Multilingual Support**: Generate and translate poetry in 12+ languages
+- 🎭 **AI Poetry Generation**: mT5-small powered option for personalized, emotional poetry
+- 🌍 **Multilingual Support (15 languages)**: English, Spanish, French, German, Italian, Portuguese, Russian, Japanese, Chinese, Arabic, Hindi, Telugu, Malayalam, Kannada, Tamil
 - 🔊 **Text-to-Speech**: High-quality voice narration using gTTS
-- 🎵 **Musical Background**: Generate thematic background music and mix with voice
+- 🎵 **Musical Background (optional)**: Generate thematic background music and mix with voice
 - 📝 **Multiple Poetry Styles**: Free verse, haiku, sonnet, limerick
 - 🎨 **Thematic Generation**: Nature, love, adventure, dreams, mystery themes
-- 🎚️ **Audio Effects**: Reverb, echo, compression, and normalization
-- 📱 **Audio Upload**: Speech-to-text transcription for voice prompts
+- 🎚️ **Audio Effects**: Reverb, echo, enhancement (compression)
+- 📱 **Audio Upload**: Speech-to-text transcription for voice prompts (common formats)
 
-## Quick Start
+## Quick Start (Local)
 ```powershell
 # Install dependencies
 pip install -r requirements.txt
 
-# Install FFmpeg (Windows)
+# (Optional) Install FFmpeg on Windows for musical mixing
 winget install --id Gyan.FFmpeg -e
 
-# Run the app
+# Run the app locally (default port 8501)
 streamlit run app.py
 ```
 
-## Status: ✅ FULLY FUNCTIONAL
-- **App running**: http://localhost:8519
-- **All libraries**: Installed and verified
-- **FFmpeg**: Installed for musical mixing
-- **AI Model**: Ready for download on first use
+Notes:
+- Musical background mixing requires FFmpeg. If FFmpeg isn’t available (e.g., on some cloud environments), the app gracefully falls back to basic voice-over (TTS only).
+- No API keys are required for this project.
 
-## 🎉 Project Status: COMPLETED
+## 🚀 Free Deployment (Streamlit Community Cloud)
 
-The **Multimodal Self-Supervised AI for Cross-Language Poetry Generation** project is now fully implemented and ready for use!
+1) Prepare the repo
+- Ensure your code is pushed to GitHub (public or private). Streamlit Cloud reads `requirements.txt` automatically.
 
-## 🚀 Running the Application
+2) Deploy
+- Go to `https://streamlit.io/cloud` → `New app`
+- Select your repo/branch (`main`) and `app.py` as the entry point
+- Click `Deploy`
 
-**The app is currently live at: http://localhost:8510**
+3) Share a clean viewer link
+- Append `?embed=true` to hide Streamlit chrome for viewers
+- Example: `https://poetry-ai.streamlit.app/?embed=true`
 
-To restart the app:
-```bash
-streamlit run app.py --server.port=8510
+4) Private repo? (Optional)
+- You can set the GitHub repo to Private. If redeploy fails, re-authorize private repo access in Streamlit Cloud:
+	- Account → App permissions → Grant access to private repositories → Rerun
+
+## 🔁 How to Redeploy After Changes
+
+Most reliable flow is commit-based (auto-redeploy on push):
+
+1) Commit your changes locally
+```powershell
+git add .
+git commit -m "Update: embed mode + language mappings + UI tweaks"
+git push
 ```
+
+2) Streamlit Cloud auto-deploys your latest commit
+- Watch logs in the app’s “Manage app” panel → “Logs”
+- If the app doesn’t update, click “Rerun” or “Restart” in “Manage app”
+
+3) Verify live
+- Open the app URL (optionally with `?embed=true`) in an incognito window
+
+Manual redeploy (alternative):
+- Open “Manage app” → Press “Rerun” or “Reboot app” to rebuild from the same commit
+
+Troubleshooting redeploys:
+- If requirements changed, make sure `requirements.txt` is updated and committed
+- For private repos, re-authorize GitHub access in Streamlit Cloud if prompted
+- Clear your browser cache or use incognito to avoid stale assets
 
 ## ✨ Completed Features
 
@@ -53,8 +85,8 @@ streamlit run app.py --server.port=8510
 - **Enhanced Templates**: Sophisticated, longer, more poetic content
 - **AI Model Integration**: Optional mT5-small model for advanced generation
 
-### ✅ Multilingual Support (12 Languages)
-- **Languages**: English, Spanish, French, German, Italian, Portuguese, Russian, Japanese, Chinese, Arabic, Hindi, **Telugu**
+### ✅ Multilingual Support (15 Languages)
+- **Languages**: English, Spanish, French, German, Italian, Portuguese, Russian, Japanese, Chinese, Arabic, Hindi, **Telugu, Malayalam, Kannada, Tamil**
 - **Real-time Translation**: Using deep-translator with Google Translate
 - **Native TTS**: Voice-over support in all 12 languages
 
@@ -171,10 +203,13 @@ multimodal-poetry-ai/
 
 ## 🌍 Language Support
 
-All features work across 12 languages:
+All core features work across 15 languages:
 - **European**: English, Spanish, French, German, Italian, Portuguese, Russian
-- **Asian**: Japanese, Chinese, Hindi, Telugu
+- **Asian**: Japanese, Chinese, Hindi, Telugu, Malayalam, Kannada, Tamil
 - **Middle Eastern**: Arabic
+
+Notes:
+- gTTS supports the listed languages; some voices/accents vary by region. If a specific code isn’t available, the app falls back to English cleanly.
 
 ## 🎭 Usage Examples
 
@@ -216,6 +251,11 @@ The **Multimodal Cross-Language Poetry AI** is now a fully functional applicatio
 6. **Production Quality**: Robust error handling and user experience
 
 **🎭 The project is complete and ready for use! 🎭**
+
+—
+Privacy and UI notes:
+- Only owners/collaborators see the “Manage app” button when logged in. Viewers won’t see it.
+- Use `?embed=true` for a cleaner viewer experience.
 
 ---
 *Generated by Multimodal Poetry AI - Built with ❤️ and Streamlit*
