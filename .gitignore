@@ -1,0 +1,32 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.log
+
+# Virtual environments
+poetry_env/
+venv/
+ENV/
+
+# Streamlit secrets
+.streamlit/secrets.toml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test outputs
+*.wav
+*.mp3
+*.m4a
+*.ogg
+*.flac
+*.tmp
+
+# Jupyter checkpoints
+.ipynb_checkpoints/

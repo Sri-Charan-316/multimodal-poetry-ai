@@ -1,0 +1,582 @@
+.stSidebar .advanced-feature-card, .stSidebar .stExpander.advanced-feature, .stSidebar .stHeader.advanced-feature {
+	background: var(--section-bg) !important;
+	color: var(--text) !important;
+	border-radius: var(--radius-md) !important;
+	box-shadow: var(--shadow) !important;
+	border: 1.5px solid var(--accent-1) !important;
+}
+
+/* Make all expanders in sidebar use the light peach style with dark text */
+.stSidebar .stExpander {
+	background: var(--section-bg) !important;
+	color: var(--text) !important;
+	border-radius: var(--radius-md) !important;
+	box-shadow: var(--shadow) !important;
+	border: 1.5px solid var(--accent-1) !important;
+}
+
+/* Expander content should also have dark text on light background (collapsed) */
+.stSidebar .stExpander > div {
+	color: var(--text) !important;
+	background: var(--section-bg) !important;
+}
+
+/* When expanded, switch to dark background and light text for readability */
+.stSidebar .stExpander[aria-expanded="true"],
+.stSidebar .stExpander[open],
+.stSidebar .stExpander.is-expanded {
+	background: #25344A !important; /* sidebar dark bg */
+	color: #F5F5F7 !important; /* light text */
+}
+.stSidebar .stExpander[aria-expanded="true"] *,
+.stSidebar .stExpander[open] *,
+.stSidebar .stExpander.is-expanded * {
+	color: #F5F5F7 !important;
+}
+
+/* Expander content should also have dark text on light background */
+.stSidebar .stExpander > div {
+	color: var(--text) !important;
+}
+
+/* All text inside expanders should be dark */
+.stSidebar .stExpander * {
+	color: var(--text) !important;
+}
+
+/* Expander headers/titles should be dark */
+.stSidebar .stExpander .streamlit-expanderHeader {
+	color: var(--text) !important;
+	font-weight: 600 !important;
+}
+
+/* Sidebar main background has gradient, main text should be light for dark areas */
+.stSidebar {
+	background: linear-gradient(180deg, var(--sidebar-bg-start) 0%, var(--sidebar-bg-end) 100%) !important;
+	color: var(--sidebar-text) !important;
+	border-right: 3px solid var(--sidebar-accent) !important;
+	box-shadow: 0 0 0 2px var(--sidebar-accent), var(--shadow) !important;
+}
+
+/* Dark sidebar elements should have light text */
+.stSidebar .stHeader, .stSidebar .stSelectbox, .stSidebar .stSlider, .stSidebar .stTextInput, .stSidebar .stButton {
+	background: var(--sidebar-dark) !important;
+	border-radius: var(--radius-md) !important;
+	box-shadow: var(--shadow) !important;
+	color: var(--sidebar-text) !important;
+}
+
+/* Sidebar headers should be light for contrast on dark gradient */
+.stSidebar h1, .stSidebar h2, .stSidebar h3, .stSidebar h4, .stSidebar h5, .stSidebar h6 {
+	color: #FFFFFF !important; /* make 'Settings' and other headers visible */
+	font-weight: 700 !important;
+}
+/* Minimal Cartoon-Themed UI for Multimodal Poetry AI */
+/* Google Font */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap');
+
+
+:root {
+	--bg-start: #FEFEFE;           /* milky white */
+	--bg-end: #FFDBCC;             /* soft peach */
+	--section-bg: #FFF0E6;         /* light peach for cards */
+	--accent-1: #FFE5D1;           /* soft accent */
+	--accent-2: #FFCAB0;           /* stronger peach */
+	--text: #2C2C2C;               /* dark charcoal */
+	--ink: #000000;                /* pure black for cartoon lines */
+	--shadow: 0 2px 8px rgba(0,0,0,0.05);
+	--radius-sm: 8px;
+	--radius-md: 12px;
+	--radius-lg: 16px;
+	/* Sidebar and uploader theme */
+		--sidebar-dark: #25344A;       /* dark blue-gray for sidebar */
+		--sidebar-bg-start: #25344A;   /* dark blue-gray */
+		--sidebar-bg-end: #E6F6FF;     /* soft mint blue */
+		--sidebar-accent: #7FB8D8;     /* deeper accent for sidebar */
+		--sidebar-card: #D1E6FF;       /* card accent in sidebar */
+		--sidebar-text: #F3F6FA;       /* light text for dark bg */
+		--uploader-bg: #A1C8A1;        /* light sage green for uploader */
+		--uploader-border: #7FB87F;    /* medium green border */
+		--uploader-accent: #B8D8B8;    /* light green accent for uploader */
+		--uploader-text: #2E5233;      /* dark green for uploader text */
+		--uploader-label: #1A3D1F;     /* strong readable dark green label */
+		--uploader-info: #4A6B4F;      /* medium green for info text */
+}
+
+/* Blinking cursor animation for text inputs */
+@keyframes blink {
+	0%, 50% { opacity: 1; }
+	51%, 100% { opacity: 0; }
+}
+
+@keyframes cursor-pulse {
+	0% { opacity: 1; transform: scaleY(1); }
+	50% { opacity: 0.3; transform: scaleY(0.8); }
+	100% { opacity: 1; transform: scaleY(1); }
+}
+
+/* Enhanced text input styling with better cursor visibility */
+.stTextInput input,
+.stTextArea textarea {
+	caret-color: #FF6B35 !important;
+	position: relative;
+	transition: all 0.3s ease;
+}
+
+/* Make the cursor more prominent when focused - exclude description box from animations */
+.stTextInput input:focus {
+	caret-color: #FF4500 !important;
+	box-shadow: 0 0 0 2px var(--accent-1), 0 0 8px rgba(255, 219, 204, 0.2) !important;
+	border: 2px solid var(--accent-1) !important;
+	animation: cursor-pulse 1.5s infinite ease-in-out;
+}
+
+/* Description textarea gets cursor but no animations */
+.stTextArea textarea:focus {
+	caret-color: #FF4500 !important;
+	box-shadow: 0 0 0 2px var(--accent-1) !important;
+	border: 2px solid var(--accent-1) !important;
+	/* No animation for description box */
+}
+
+/* Add a blinking border effect for better visibility - only for text inputs, not description */
+.stTextInput:focus-within {
+	position: relative;
+}
+
+.stTextInput:focus-within::after {
+	content: '';
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	width: 3px;
+	background: linear-gradient(0deg, #FF6B35, #FFDBCC);
+	animation: blink 1.2s infinite;
+	border-radius: 0 4px 4px 0;
+	pointer-events: none;
+	z-index: 10;
+}
+
+/* Add a typing indicator animation for more visual feedback - only for text inputs */
+.stTextInput input:not(:placeholder-shown) {
+	position: relative;
+}
+
+.stTextInput input:not(:placeholder-shown)::before {
+	content: '';
+	position: absolute;
+	right: 8px;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 2px;
+	height: 16px;
+	background: #FF6B35;
+	animation: blink 1s infinite;
+	border-radius: 1px;
+}
+
+/* App background and typography */
+.stApp {
+	background: linear-gradient(180deg, var(--bg-start) 0%, var(--bg-end) 100%) !important;
+	color: var(--text);
+	font-family: 'Nunito', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+/* Centralize content a bit and add breathing room */
+.main .block-container {
+	padding-top: clamp(12px, 2.5vw, 32px);
+	padding-bottom: clamp(24px, 4vw, 48px);
+	max-width: 1200px;
+}
+
+/* Header */
+.app-header {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	padding: 16px 20px;
+	background: var(--section-bg);
+	border-radius: var(--radius-lg);
+	box-shadow: var(--shadow);
+	border: 2px solid var(--accent-1);
+}
+.app-header .title {
+	display: flex;
+	flex-direction: column;
+}
+.app-header .title h1 {
+	margin: 0;
+	font-weight: 800;
+	font-size: clamp(20px, 3.5vw, 32px);
+	letter-spacing: 0.5px;
+}
+.app-header .title p {
+	margin: 2px 0 0 0;
+	color: #4a4a4a;
+}
+
+/* Logo next to title */
+.app-header .logo-wrap {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin-right: 12px;
+}
+.app-header .app-logo {
+	display: block;
+	width: 56px;
+	height: auto;
+	filter: drop-shadow(0 2px 4px rgba(0,0,0,0.08));
+}
+
+/* Emoji next to title */
+.app-header .emoji-logo {
+	display: inline-block;
+	font-size: 46px;
+	line-height: 1;
+	filter: drop-shadow(0 2px 4px rgba(0,0,0,0.08));
+}
+
+/* History button styling */
+.stButton[data-testid="baseButton-primaryFormSubmit"] button[title*="History"] {
+	background: linear-gradient(135deg, #FF6B35, #FFDBCC) !important;
+	border: 2px solid #FF6B35 !important;
+	border-radius: 25px !important;
+	padding: 8px 20px !important;
+	font-weight: 600 !important;
+	font-size: 14px !important;
+	color: white !important;
+	box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3) !important;
+	transition: all 0.3s ease !important;
+	min-width: 100px !important;
+	height: 45px !important;
+}
+
+.stButton[data-testid="baseButton-primaryFormSubmit"] button[title*="History"]:hover {
+	transform: translateY(-2px) !important;
+	box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4) !important;
+	background: linear-gradient(135deg, #FF4500, #FF6B35) !important;
+}
+
+/* History modal/section styling */
+.history-section {
+	background: var(--section-bg);
+	border-radius: var(--radius-lg);
+	padding: 20px;
+	margin: 20px 0;
+	border: 2px solid var(--accent-1);
+	box-shadow: var(--shadow);
+}
+
+/* Generic card/section styling */
+.soft-card {
+	background: var(--section-bg);
+	border-radius: var(--radius-lg);
+	box-shadow: var(--shadow);
+	border: 1px solid var(--accent-1);
+	padding: clamp(12px, 2vw, 20px);
+}
+
+/* Buttons */
+.stButton>button {
+	border-radius: var(--radius-md) !important;
+	background: var(--accent-2) !important;
+	color: var(--ink) !important;
+	border: 2px solid var(--ink) !important;
+	box-shadow: 0 3px 0 var(--ink), var(--shadow) !important;
+	transition: transform 0.2s ease, background 0.3s ease, box-shadow 0.2s ease;
+	font-weight: 700 !important;
+}
+.stButton>button:hover {
+	background: linear-gradient(135deg, var(--accent-2), var(--accent-1)) !important;
+	transform: translateY(-1px);
+}
+.stButton>button:active {
+	transform: translateY(1px);
+	box-shadow: 0 1px 0 var(--ink) !important;
+}
+
+/* Inputs */
+.stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"]>div,
+.stNumberInput input, .stDateInput input, .stSlider>div>div {
+	background: #FFFFFF !important;
+	border: 2px solid var(--accent-1) !important;
+	border-radius: var(--radius-sm) !important;
+	color: var(--text) !important;
+	box-shadow: none !important;
+}
+.stTextInput input:focus, .stTextArea textarea:focus, .stSelectbox div[data-baseweb="select"]>div:focus-within {
+	outline: none !important;
+	border-color: var(--accent-2) !important;
+	box-shadow: 0 0 0 3px rgba(255, 202, 176, 0.25) !important;
+}
+.stTextArea textarea::placeholder, .stTextInput input::placeholder {
+	color: #9a9a9a !important;
+}
+
+/* Input labels should be dark */
+.stTextInput label, .stTextArea label, .stSelectbox label, .stFileUploader label {
+	color: var(--text) !important;
+	font-weight: 600 !important;
+}
+
+/* Sidebar: make widget labels (text next to emojis) white for visibility on dark cards */
+.stSidebar .stSelectbox label,
+.stSidebar .stTextInput label,
+.stSidebar .stSlider label,
+.stSidebar .stNumberInput label,
+.stSidebar .stMultiSelect label,
+.stSidebar .stRadio label,
+.stSidebar .stDateInput label,
+.stSidebar .stFileUploader label,
+.stSidebar .stColorPicker label {
+	color: #FFFFFF !important;
+}
+
+/* Also target Streamlit's widget label wrapper to ensure white text next to emojis */
+.stSidebar [data-testid="stWidgetLabel"] p,
+.stSidebar [data-testid="stWidgetLabel"] label {
+	color: #FFFFFF !important;
+}
+
+/* Poetry Display Card */
+.poetry-card {
+	position: relative;
+	background: #FFFFFF;
+	border-radius: 16px;
+	border: 2px solid var(--ink);
+	box-shadow: 6px 6px 0 var(--ink), 0 8px 16px rgba(0,0,0,0.08);
+	padding: clamp(16px, 3vw, 28px);
+	margin: 12px 0 18px 0;
+}
+.poetry-card .poem-text {
+	font-family: 'Georgia', 'Times New Roman', serif;
+	font-size: clamp(14px, 1.6vw, 18px);
+	line-height: 1.9;
+	color: var(--text);
+	text-align: center;
+	white-space: pre-wrap;
+}
+.poetry-card .corner-deco {
+	position: absolute;
+	width: 48px;
+	height: 48px;
+	opacity: 0.9;
+}
+.poetry-card .corner-deco.tl { top: -10px; left: -10px; }
+.poetry-card .corner-deco.tr { top: -10px; right: -10px; transform: scaleX(-1); }
+.poetry-card .corner-deco.bl { bottom: -10px; left: -10px; }
+.poetry-card .corner-deco.br { bottom: -10px; right: -10px; transform: scaleX(-1); }
+
+/* Cartoon stroke defaults */
+.cartoon {
+	stroke: var(--ink);
+	stroke-width: 2.5;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+	fill: none;
+}
+.cartoon-fill {
+	fill: var(--ink);
+	stroke: none;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+	from { opacity: 0; transform: translateY(6px); }
+	to { opacity: 1; transform: translateY(0); }
+}
+@keyframes bounceSmall {
+	0%, 100% { transform: translateY(0); }
+	50% { transform: translateY(-3px); }
+}
+.fade-in { animation: fadeInUp 0.4s ease both; }
+.bounce { animation: bounceSmall 2s ease-in-out infinite; }
+
+
+/* File uploader styling */
+/* File uploader styling */
+.stFileUploader {
+	background: var(--uploader-bg) !important;
+	border-radius: var(--radius-lg) !important;
+	border: 2.5px dashed var(--uploader-border) !important;
+	box-shadow: 0 2px 8px rgba(179,161,216,0.10), var(--shadow) !important;
+	color: var(--uploader-text) !important;
+	padding: 18px 12px !important;
+	transition: border-color 0.3s, box-shadow 0.3s;
+}
+.stFileUploader:hover, .stFileUploader:focus-within {
+	border-color: var(--uploader-accent) !important;
+	box-shadow: 0 4px 16px rgba(214,199,240,0.18), var(--shadow) !important;
+}
+.stFileUploader label {
+	color: var(--uploader-label) !important;
+	font-weight: 700 !important;
+	font-size: 1.08em !important;
+}
+
+/* Make only the 'Upload audio (wav/mp3/m4a/ogg)' label text lighter for contrast */
+.stSidebar [data-testid="audio_prompt_uploader"] ~ div label,
+.stSidebar [data-testid="stFileUploader"] div:has(input[id*="audio_prompt_uploader"]) label,
+label:has(+ div [id*="audio_prompt_uploader"]) {
+	color: #F5F5F7 !important; /* near-white */
+}
+.stFileUploader .stFileUploaderDropzone {
+	background: var(--uploader-bg) !important;
+	border-radius: var(--radius-md) !important;
+	border: none !important;
+}
+.stFileUploader .stFileUploaderDropzone:hover {
+	background: var(--uploader-accent) !important;
+}
+.stFileUploader .uploadedFileName, .stFileUploader .uploadedFileSize {
+	color: var(--uploader-info) !important;
+	font-weight: 600 !important;
+}
+.stFileUploader .stFileUploaderInstructions {
+	color: var(--uploader-info) !important;
+	font-size: 0.98em !important;
+}
+.stFileUploader input::placeholder, .stFileUploader textarea::placeholder {
+	color: #6A5A8A !important;
+	opacity: 1 !important;
+}
+
+/* Custom label for audio uploader (sidebar) */
+.stSidebar .upload-audio-label {
+    color: #F5F5F7 !important;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+/* Browse files button styling */
+.stFileUploader button[kind="secondary"] {
+    color: #FFFFFF !important;
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.stFileUploader button[kind="secondary"]:hover {
+    color: #FFFFFF !important;
+    background-color: rgba(255, 255, 255, 0.2) !important;
+    border-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* Target Browse files button specifically */
+div[data-testid="stFileUploader"] button {
+    color: #FFFFFF !important;
+}/* Footer */
+.app-footer {
+	margin-top: 24px;
+	padding: 12px 16px;
+	border-radius: var(--radius-md);
+	background: var(--section-bg);
+	border: 1px solid var(--accent-1);
+	display: flex;
+	align-items: center;
+	justify-content: center; /* center content */
+	gap: 10px;
+}
+
+.footer-center-text {
+	font-weight: 600; /* medium bold */
+	text-align: center;
+	width: 100%;
+}
+
+/* Bottom-of-page centered title */
+.bottom-page-title {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+	margin-top: 28px;
+	margin-bottom: 36px;
+	font-weight: 700;
+	font-size: clamp(18px, 2.2vw, 26px);
+	color: var(--heading);
+}
+.bottom-page-title .icon svg {
+	display: inline-block;
+	vertical-align: middle;
+}
+
+/* Bottom-of-page emoji icon sizing */
+.bottom-page-title .emoji-icon {
+    font-size: 22px;
+    line-height: 1;
+    transform: translateY(1px);
+}
+
+/* Error message styling - make text black for visibility */
+.stException .message,
+.stException pre,
+.stAlert .message,
+div[data-testid="stException"] *,
+div[data-testid="stAlert"] * {
+    color: #000000 !important;
+}
+
+/* Streamlit error containers */
+div[data-testid="stException"],
+div[data-testid="stAlert"] {
+    background-color: #FFE6E6 !important;
+    border: 2px solid #FF6B6B !important;
+    border-radius: 8px !important;
+    color: #000000 !important;
+}
+
+/* Success message styling - make text dark */
+div[data-testid="stSuccess"] *,
+.stSuccess *,
+div[class*="success"] * {
+    color: #000000 !important;
+}
+
+/* Info message styling - make text dark */
+div[data-testid="stInfo"] *,
+.stInfo *,
+div[class*="info"] * {
+    color: #000000 !important;
+}
+
+/* Warning message styling - make text dark */
+div[data-testid="stWarning"] *,
+.stWarning *,
+div[class*="warning"] * {
+    color: #000000 !important;
+}
+
+/* Checkbox text styling - make text dark in sidebar */
+
+.stSidebar .stCheckbox label,
+.stSidebar .stCheckbox span,
+.stSidebar div[data-testid="stCheckbox"] label,
+.stSidebar div[data-testid="stCheckbox"] span {
+	color: #2C2C2C !important;
+}
+
+/* Checkbox text in expanded sections should be dark (on light background) */
+
+.stSidebar .stExpander[aria-expanded="true"] .stCheckbox label,
+.stSidebar .stExpander[aria-expanded="true"] .stCheckbox span,
+.stSidebar .stExpander[aria-expanded="true"] div[data-testid="stCheckbox"] label,
+.stSidebar .stExpander[aria-expanded="true"] div[data-testid="stCheckbox"] span,
+.stSidebar .stExpander[open] .stCheckbox label,
+.stSidebar .stExpander[open] .stCheckbox span,
+.stSidebar .stExpander[open] div[data-testid="stCheckbox"] label,
+.stSidebar .stExpander[open] div[data-testid="stCheckbox"] span {
+	color: #2C2C2C !important;
+}
+
+/* Radio button text styling - make text dark in sidebar */
+.stSidebar .stRadio label,
+.stSidebar .stRadio span,
+.stSidebar div[data-testid="stRadio"] label,
+.stSidebar div[data-testid="stRadio"] span {
+    color: #FFFFFF !important;
+}/* Responsive helpers */
+@media (max-width: 680px) {
+	.app-header { flex-direction: column; text-align: center; }
+}

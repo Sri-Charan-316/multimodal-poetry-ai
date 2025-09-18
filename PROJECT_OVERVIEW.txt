@@ -1,0 +1,116 @@
+Multimodal Poetry AI - Project Overview (Shareable)
+
+1) What this project is
+- A Streamlit-based web app that composes poetry using classic computer science data structures and algorithms, with invisible real-time updates when settings change.
+- It supports multi-language output and optional voice-over narration with multiple voice options (2 male, 2 female, plus default) and optional musical enhancement.
+
+2) High-level architecture
+- Frontend: Streamlit UI (Python) - single-page app driven by app.py
+- Backend: Also app.py - all logic, data structures, algorithms, audio generation, and session-state live here
+- No separate API server: Everything runs in-process inside Streamlit. Internet is required only for gTTS (text-to-speech) and any optional translation/model calls.
+- State: st.session_state holds prompt, generated poem, audio, and the most recent settings to enable seamless, real-time updates.
+
+3) Key technologies and libraries
+- Streamlit - web UI + app server
+- Python standard library - data structures, heapq (priority queues), tempfile, os, time, etc.
+- NetworkX - graph algorithms used by the semantic graph and pathfinding
+- gTTS - text-to-speech; requires internet; we select different voices via TLDs (com, co.uk, com.au, ca)
+- pydub + ffmpeg - audio processing, mixing, and exporting for musical background (optional)
+- deep_translator (optional) - translation support when enabled
+
+4) Frontend (UI) features (in app.py)
+- Prompt/description input area for the poem idea
+- Sidebar Settings:
+  - Target language, poetry style, length, theme, mood, generation mode, template usage
+  - Voice-Over settings: enable/disable, voice speed slider, and voice selection:
+    - Voices: male_1 (Professional), male_2 (British), female_1 (Australian), female_2 (Canadian), neutral (default)
+  - Musical mode: optional background music + FX mix when available
+- Real-time updates happen silently when settings change (no toggle shown): poem/audio re-generate automatically without extra clicks
+- Result panel: shows generated poem(s), English version (when applicable), and audio players when enabled
+
+5) Backend features (in app.py)
+- Session persistence with st.session_state prevents text loss across interactions (prompt, poem, audio file, flags, last settings snapshot)
+- Smart setting change detection compares generation_settings vs current_settings and auto-regenerates when anything important changes
+- Dual generation paths:
+  - Template/algorithmic generation (always available)
+  - Optional model-assisted generation (if a text model pipeline is available in your environment)
+- Audio generation:
+  - create_audio_from_text / create_simple_audio (gTTS-based)
+  - create_musical_poetry_audio (when pydub + ffmpeg available) to blend voice with background/FX
+  - Multiple voice options via gTTS TLD selection (male_1/male_2/female_1/female_2/neutral)
+
+6) Data structures and algorithms (where and how they are used)
+- Trie (PoetryTrie):
+  - Purpose: Fast lookup of words, prefix/pattern lookups for alliteration, assonance, and rhyme assistance
+  - Where: Implemented in app.py; used during line construction for quick candidate word retrieval
+- Graph (SemanticGraph using NetworkX):
+  - Purpose: Represent semantic relationships between words/themes; navigate meaningfully between concepts
+  - Algorithms: A* search and Dijkstra to find creative, semantically coherent paths through concept space when building lines
+  - Where: app.py; NetworkX provides graph primitives and pathfinding
+- Heap/Priority Queue (RhymeEngine):
+  - Purpose: Rank/select best rhyme candidates efficiently
+  - Where: app.py; uses heapq to maintain top rhyme candidates weighted by rhyme score, meter fit, and context relevance
+- Dynamic Programming (PoetryOptimizer):
+  - Purpose: Optimize line structure to fit constraints (syllable/meter/sentiment) with minimal penalty
+  - Where: app.py; DP table/recurrence used to evaluate and choose sequences with best overall score
+- Heuristic Search (CreativePathFinder with A*):
+  - Purpose: Explore creative word/phrase sequences balancing semantic coherence with stylistic flair
+  - Where: app.py; heuristic combines semantic distance with style/rhyme/meter cost to guide exploration
+
+7) Voice-over details
+- TTS: gTTS requires internet. We switch voices by varying the TLD:
+  - male_1: tld = com (Professional)
+  - male_2: tld = co.uk (British)
+  - female_1: tld = com.au (Australian)
+  - female_2: tld = ca (Canadian)
+  - neutral: tld = com (Default)
+- Functions accept voice_type and pass the mapped tld into gTTS(...)
+- When musical mode is enabled and audio libraries are available, the voice track is mixed with simple background tones/FX
+
+8) Settings tracked for real-time change detection
+- target_language, poetry_style, poem_length, theme, mood, generation_mode, use_templates
+- Voice: enable_voice, voice_speed, selected_voice
+- Musical: enable_musical
+- prompt (trimmed) - included so prompt edits also trigger regeneration
+
+9) Error handling and edge cases
+- No internet: TTS warns and skips audio generation
+- Missing ffmpeg/pydub: Falls back to basic TTS (no musical mix) or informs user
+- Empty text: Audio generation aborts gracefully with message
+- Session continuity: Inputs/outputs persist through setting changes, avoiding data loss
+
+10) How to run (Windows / PowerShell)
+- From the project root:
+
+  a) Activate the virtual environment (if not already active):
+     poetry_env\Scripts\Activate.ps1
+
+  b) Start the app (choose an open port):
+     poetry_env\Scripts\streamlit run app.py --server.port 8529
+
+  c) Open in your browser:
+     http://localhost:8529
+
+- Stop the app with Ctrl+C in the terminal
+
+11) Where things live
+- app.py: Entire app - UI, state, algorithms, audio, and generation flows
+- PROJECT_OVERVIEW.txt: This document for teammates
+
+12) What has been implemented
+- CS-driven generation using Trie, Graph + A*, Priority Queue, Dynamic Programming, and heuristic search
+- Fixed critical UX: prevented prompt/poem text disappearance when changing settings
+- Invisible real-time updates: poem/audio auto-refresh when settings change
+- Multi-voice TTS (2 male, 2 female, default) + speed control and optional musical enhancement
+- Clear fallbacks and user guidance for missing internet or audio tools
+
+13) TL;DR for stakeholders
+- It is a Streamlit web app that composes poetry with classic CS algorithms (Trie/Graph/DP/A*). It updates results automatically as you change settings, can speak the poem aloud in multiple voices, and optionally adds musical background. Everything runs in a single Python app with clean fallbacks when internet or audio tools are missing.
+
+14) Next steps / extensions
+- Pluggable LLMs or HuggingFace pipelines for alternative/augmented generation
+- Proper phonetic analysis (CMU dict) for richer rhyme/meter scoring
+- Learn-from-feedback loop storing anonymized preferences to refine future outputs
+- Theme-aware background music generator with beat-synced recitation
+
+End of document
