@@ -105,10 +105,12 @@ try:
     # Initialize global model variables
     model = None
     tokenizer = None
-except ImportError:
+    _dbg("✅ AI model dependencies available")
+except ImportError as e:
     AI_MODEL_AVAILABLE = False
     model = None
     tokenizer = None
+    _dbg(f"⚠️ AI model not available: {e}. Using template generation.")
 
 # Additional imports for enhanced features
 import json
@@ -1904,12 +1906,36 @@ def get_audio_player_html(audio_file_path):
 def _load_text_model():
     """Lazily load a small multilingual text generation model (mT5-small)."""
     try:
+        if not AI_MODEL_AVAILABLE:
+            return None
+        
         from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, pipeline
+        
+        # Try to load with proper error handling
         model_name = "google/mt5-small"
-        tok = AutoTokenizer.from_pretrained(model_name)
-        mdl = AutoModelForSeq2SeqLM.from_pretrained(model_name)
-        pipe = pipeline("text2text-generation", model=mdl, tokenizer=tok)
-        return pipe
+        
+        # Load tokenizer first with fallback
+        try:
+            tok = AutoTokenizer.from_pretrained(model_name, use_fast=False)
+        except Exception as e:
+            st.info(f"⚠️ Tokenizer loading failed: {e}. Using template generator.")
+            return None
+        
+        # Load model with fallback
+        try:
+            mdl = AutoModelForSeq2SeqLM.from_pretrained(model_name)
+        except Exception as e:
+            st.info(f"⚠️ Model loading failed: {e}. Using template generator.")
+            return None
+        
+        # Create pipeline with error handling
+        try:
+            pipe = pipeline("text2text-generation", model=mdl, tokenizer=tok)
+            return pipe
+        except Exception as e:
+            st.info(f"⚠️ Pipeline creation failed: {e}. Using template generator.")
+            return None
+            
     except Exception as e:
         st.info(f"⚠️ AI model not loaded: {e}. Using template generator.")
         return None
@@ -2201,18 +2227,31 @@ def generate_pure_ai_poetry(prompt, style, theme, length):
         global model, tokenizer
         
         if not AI_MODEL_AVAILABLE:
-            st.warning("AI model not available, falling back to creative generation")
+            st.info("🤖 AI model not available, using creative template generation")
             return generate_creative_fusion_poetry(prompt, style, theme, length)
         
-        # Load model if not already loaded
+        # Load model if not already loaded with better error handling
         if model is None or tokenizer is None:
             try:
                 model_name = "google/mt5-small"
-                tokenizer = AutoTokenizer.from_pretrained(model_name)
-                model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
+                
+                # Try loading with more specific error handling
+                try:
+                    tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=False)
+                except Exception as e:
+                    st.info(f"🤖 Tokenizer error: {e}. Using creative templates.")
+                    return generate_creative_fusion_poetry(prompt, style, theme, length)
+                
+                try:
+                    model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
+                except Exception as e:
+                    st.info(f"🤖 Model loading error: {e}. Using creative templates.")
+                    return generate_creative_fusion_poetry(prompt, style, theme, length)
+                    
                 _dbg(f"✅ Loaded AI model: {model_name}")
+                
             except Exception as e:
-                st.warning(f"Failed to load AI model: {e}")
+                st.info(f"🤖 AI model setup failed: {e}. Using creative templates.")
                 return generate_creative_fusion_poetry(prompt, style, theme, length)
         
         # Create a sophisticated prompt for the AI model
@@ -2227,35 +2266,40 @@ def generate_pure_ai_poetry(prompt, style, theme, length):
         Create something completely new and heartfelt:
         """
         
-        # Use the AI model to generate poetry
-        inputs = tokenizer(ai_prompt, return_tensors="pt", max_length=512, truncation=True)
-        
-        with torch.no_grad():
-            outputs = model.generate(
-                inputs.input_ids,
-                max_length=200,
-                num_return_sequences=1,
-                temperature=0.9,
-                do_sample=True,
-                pad_token_id=tokenizer.eos_token_id,
-                repetition_penalty=1.2
-            )
-        
-        generated_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
-        
-        # Extract just the poem part
-        if ":" in generated_text:
-            poem = generated_text.split(":", 1)[1].strip()
-        else:
-            poem = generated_text.strip()
-        
-        if len(poem) > 50:  # Minimum viable poem length
-            return poem
-        else:
+        # Use the AI model to generate poetry with error handling
+        try:
+            inputs = tokenizer(ai_prompt, return_tensors="pt", max_length=512, truncation=True)
+            
+            with torch.no_grad():
+                outputs = model.generate(
+                    inputs.input_ids,
+                    max_length=200,
+                    num_return_sequences=1,
+                    temperature=0.9,
+                    do_sample=True,
+                    pad_token_id=tokenizer.eos_token_id,
+                    repetition_penalty=1.2
+                )
+            
+            generated_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
+            
+            # Extract just the poem part
+            if ":" in generated_text:
+                poem = generated_text.split(":", 1)[1].strip()
+            else:
+                poem = generated_text.strip()
+            
+            if len(poem) > 50:  # Minimum viable poem length
+                return poem
+            else:
+                return generate_creative_fusion_poetry(prompt, style, theme, length)
+                
+        except Exception as e:
+            st.info(f"🤖 AI generation error: {e}. Using creative templates.")
             return generate_creative_fusion_poetry(prompt, style, theme, length)
             
     except Exception as e:
-        st.info(f"Pure AI generation fallback: {e}")
+        st.info(f"🤖 Pure AI generation fallback: {e}. Using creative templates.")
         return generate_creative_fusion_poetry(prompt, style, theme, length)
 
 def generate_creative_fusion_poetry(prompt, style, theme, length):
@@ -3084,22 +3128,79 @@ def main():
 
         st.divider()
 
-        # Audio prompt (speech-to-text) - optional
+        # Audio prompt (speech-to-text) - enhanced with better error handling
         st.subheader("🎙️ Audio Prompt (beta)")
-        st.caption("Upload a short recording and transcribe it to use as your prompt. Uses Google Web Speech via SpeechRecognition if available.")
+        st.caption("Upload a short recording and transcribe it to use as your prompt. Uses Google Web Speech via SpeechRecognition.")
+        
         # Custom label for uploader to control color precisely; hide the default label
         st.markdown('<div class="upload-audio-label">Upload audio (wav/mp3/m4a/ogg)</div>', unsafe_allow_html=True)
-        audio_prompt = st.file_uploader("Upload audio (wav/mp3/m4a/ogg)", type=["wav", "mp3", "m4a", "ogg"], key="audio_prompt_uploader", label_visibility="collapsed")
-        do_transcribe = st.button("📝 Transcribe Audio")
-        transcript_text = None
-        if do_transcribe and audio_prompt is not None:
-            with st.spinner("Transcribing audio..."):
-                transcript_text = transcribe_audio_file(audio_prompt.read(), audio_prompt.type or "audio/mpeg", target_language)
-                if transcript_text:
-                    st.success("Transcription complete. Inserted into the prompt field.")
-                    st.session_state["prompt_text"] = transcript_text
-                else:
-                    st.warning("Could not transcribe audio. Ensure clear speech and try again.")
+        audio_prompt = st.file_uploader(
+            "Upload audio (wav/mp3/m4a/ogg)", 
+            type=["wav", "mp3", "m4a", "ogg", "flac"], 
+            key="audio_prompt_uploader", 
+            label_visibility="collapsed",
+            help="Upload clear speech recording for transcription. Keep it under 1 minute for best results."
+        )
+        
+        if audio_prompt is not None:
+            try:
+                # Display audio file info
+                file_size = len(audio_prompt.getvalue())
+                file_size_mb = file_size / (1024 * 1024)
+                st.info(f"📁 **Audio file loaded:** {audio_prompt.name} ({file_size_mb:.2f} MB)")
+                
+                # Show audio player
+                st.audio(audio_prompt.getvalue(), format=audio_prompt.type or "audio/mpeg")
+                
+                # Transcribe button
+                do_transcribe = st.button("📝 Transcribe Audio", type="primary")
+                
+                if do_transcribe:
+                    with st.spinner("🎧 Transcribing audio... This may take a moment."):
+                        try:
+                            # Check internet connection first
+                            if not test_internet_connection():
+                                st.error("❌ **Internet connection required** for speech transcription. Please check your connection.")
+                            else:
+                                # Attempt transcription
+                                transcript_text = transcribe_audio_file(
+                                    audio_prompt.getvalue(), 
+                                    audio_prompt.type or "audio/mpeg", 
+                                    target_language
+                                )
+                                
+                                if transcript_text and transcript_text.strip():
+                                    st.success("✅ **Transcription successful!**")
+                                    st.markdown(f"**Transcribed text:** \"{transcript_text}\"")
+                                    
+                                    # Auto-populate the prompt field
+                                    st.session_state["prompt_text"] = transcript_text
+                                    st.success("🎯 **Text inserted into prompt field!**")
+                                    
+                                    # Show language detected
+                                    st.info(f"🌍 **Recognized in:** {target_language}")
+                                    
+                                else:
+                                    st.warning("⚠️ **Could not transcribe audio.** Please try:")
+                                    st.markdown("- Speaking more clearly and slowly")
+                                    st.markdown("- Using a quieter environment") 
+                                    st.markdown("- Recording in the selected language")
+                                    st.markdown("- Ensuring good audio quality")
+                                    
+                        except Exception as transcription_error:
+                            st.error(f"❌ **Transcription failed:** {str(transcription_error)}")
+                            st.info("💡 **Troubleshooting tips:**")
+                            st.markdown("- Try a different audio format (WAV works best)")
+                            st.markdown("- Ensure the audio contains clear speech")
+                            st.markdown("- Check your internet connection")
+                            st.markdown("- Try a shorter audio clip (under 30 seconds)")
+                            
+            except Exception as audio_error:
+                st.error(f"❌ **Error loading audio file:** {str(audio_error)}")
+                st.info("💡 Try uploading a different audio file or format")
+        else:
+            # Show transcribe button as disabled when no file
+            st.button("📝 Transcribe Audio", disabled=True, help="Upload an audio file first")
         
         st.divider()
         
@@ -3207,31 +3308,122 @@ def main():
         if prompt != st.session_state["prompt_text"]:
             st.session_state["prompt_text"] = prompt
         
-        # Image upload
+        # Image upload with improved analysis
         st.subheader("🖼️ Visual Inspiration (Optional)")
         uploaded_file = st.file_uploader(
             "Upload an image for inspiration:",
-            type=['png', 'jpg', 'jpeg'],
-            help="Upload an image to inspire your poetry"
+            type=['png', 'jpg', 'jpeg', 'webp'],
+            help="Upload an image to inspire your poetry. Supported formats: PNG, JPG, JPEG, WEBP"
         )
         
         if uploaded_file is not None:
-            image = Image.open(uploaded_file)
-            st.image(image, caption="Your inspiration image", use_container_width=True)
-            
-            # Add image inspiration to prompt
-            image_descriptions = [
-                "a scene of breathtaking natural beauty",
-                "colors that dance with light and shadow", 
-                "a moment frozen in pure magic",
-                "an image that speaks directly to the soul",
-                "beauty that transcends words"
-            ]
-            image_desc = random.choice(image_descriptions)
-            if prompt.strip():
-                prompt += f" inspired by {image_desc}"
-            else:
-                prompt = f"An image showing {image_desc}"
+            try:
+                # Load and display image with error handling
+                image = Image.open(uploaded_file)
+                
+                # Verify image is valid
+                image.verify()
+                
+                # Reload image for processing (verify() closes the file)
+                uploaded_file.seek(0)
+                image = Image.open(uploaded_file)
+                
+                # Convert to RGB if needed (handles RGBA, grayscale, etc.)
+                if image.mode != 'RGB':
+                    image = image.convert('RGB')
+                
+                # Display the image
+                st.image(image, caption="Your inspiration image", use_container_width=True)
+                
+                # Analyze image properties for better description
+                width, height = image.size
+                
+                # Basic color analysis
+                try:
+                    # Get dominant colors by sampling pixels
+                    image_small = image.resize((50, 50))
+                    pixels = list(image_small.getdata())
+                    
+                    # Calculate average color values
+                    avg_r = sum(p[0] for p in pixels) / len(pixels)
+                    avg_g = sum(p[1] for p in pixels) / len(pixels)
+                    avg_b = sum(p[2] for p in pixels) / len(pixels)
+                    
+                    # Determine color mood
+                    if avg_r > avg_g and avg_r > avg_b:
+                        color_mood = "warm, passionate reds and oranges"
+                    elif avg_g > avg_r and avg_g > avg_b:
+                        color_mood = "natural, calming greens"
+                    elif avg_b > avg_r and avg_b > avg_g:
+                        color_mood = "cool, serene blues"
+                    elif avg_r + avg_g + avg_b > 600:
+                        color_mood = "bright, luminous light"
+                    elif avg_r + avg_g + avg_b < 200:
+                        color_mood = "deep, mysterious shadows"
+                    else:
+                        color_mood = "balanced, harmonious tones"
+                    
+                    # Determine brightness
+                    brightness = (avg_r + avg_g + avg_b) / 3
+                    if brightness > 200:
+                        light_desc = "bathed in radiant light"
+                    elif brightness > 150:
+                        light_desc = "softly illuminated"
+                    elif brightness > 100:
+                        light_desc = "gently shadowed"
+                    else:
+                        light_desc = "wrapped in mysterious darkness"
+                    
+                    # Create rich description based on analysis
+                    image_descriptions = [
+                        f"a vision of {color_mood}, {light_desc}",
+                        f"an image {light_desc} with {color_mood}",
+                        f"a scene painted in {color_mood}, {light_desc}",
+                        f"a moment where {color_mood} meet the {light_desc.split()[-1]}",
+                        f"beauty expressed through {color_mood} and {light_desc}"
+                    ]
+                    
+                except Exception as color_error:
+                    # Fallback to generic descriptions if color analysis fails
+                    image_descriptions = [
+                        "a scene of breathtaking natural beauty",
+                        "colors that dance with light and shadow", 
+                        "a moment frozen in pure magic",
+                        "an image that speaks directly to the soul",
+                        "beauty that transcends words",
+                        "a visual poem waiting to be written",
+                        "inspiration captured in perfect harmony"
+                    ]
+                
+                # Add image dimensions context
+                if width > height:
+                    composition = "sweeping landscape"
+                elif height > width:
+                    composition = "towering portrait"
+                else:
+                    composition = "perfectly balanced frame"
+                
+                # Select and apply description
+                image_desc = random.choice(image_descriptions)
+                final_desc = f"{image_desc} in a {composition}"
+                
+                # Integrate with user prompt
+                if prompt.strip():
+                    prompt += f", inspired by {final_desc}"
+                else:
+                    prompt = f"A poem inspired by {final_desc}"
+                
+                # Show what was extracted
+                with st.expander("🎨 Image Analysis", expanded=False):
+                    st.write(f"**Dimensions:** {width} × {height} pixels")
+                    st.write(f"**Composition:** {composition}")
+                    st.write(f"**Inspiration:** {final_desc}")
+                    st.success("✅ Image successfully analyzed and integrated!")
+                
+            except Exception as e:
+                st.error(f"❌ Error processing image: {str(e)}")
+                st.info("💡 Try uploading a different image format (PNG, JPG, JPEG, or WEBP)")
+                st.info("🔍 Make sure the image file is not corrupted and under 200MB")
         
         # Generate button
         generate_btn = st.button("🎪 Generate Cross-Language Poetry", type="primary", use_container_width=True)

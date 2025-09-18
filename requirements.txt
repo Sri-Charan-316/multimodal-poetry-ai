@@ -8,9 +8,10 @@ pydub>=0.25.0
 # Translation capabilities
 deep-translator>=1.11.0
 
-# AI text generation
-transformers>=4.30.0
-torch>=2.0.0
+# AI text generation (with version pinning to avoid compatibility issues)
+transformers>=4.30.0,<5.0.0
+torch>=2.0.0,<3.0.0
+sentencepiece>=0.1.99
 
 # Advanced audio processing (optional)
 librosa>=0.10.0
