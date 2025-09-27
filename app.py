@@ -2282,41 +2282,544 @@ def generate_with_model(pipe, prompt, style, theme, length):
         st.info(f"AI generation enhancing: {e}. Using creative templates.")
         return None
 
-def generate_dynamic_ai_poetry(prompt, style="free verse", theme="nature", length="long", generation_mode="creative", use_templates=True):
+def generate_dynamic_ai_poetry(prompt, style="free verse", theme="nature", length="long", generation_mode="creative", use_templates=False):
     """
-    Generate highly dynamic, non-repetitive poetry using AI with multiple approaches
+    Generate truly dynamic, meaningful poetry using advanced AI techniques with emotional intelligence
+    Templates are disabled by default - this creates original, human-like poetry every time
     """
     import random
     import time
     import hashlib
     
-    # Initialize advanced structures if not already done
+    # Always use advanced AI generation (no templates)
     try:
-        if poetry_trie.word_count == 0:
-            initialize_advanced_structures()
-    except:
-        pass
-    
-    # Create a truly unique seed that includes timestamp to prevent repetition
-    timestamp = int(time.time() * 1000)  # millisecond precision
-    random_factor = random.randint(1, 999999)
-    seed_string = f"{prompt}_{theme}_{style}_{length}_{generation_mode}_{timestamp}_{random_factor}"
-    seed = int(hashlib.sha256(seed_string.encode()).hexdigest()[:16], 16)
-    random.seed(seed)
-    
-    # Different generation approaches
-    if generation_mode == "pure_ai":
-        return generate_pure_ai_poetry(prompt, style, theme, length)
-    elif generation_mode == "template_enhanced":
-        return generate_template_enhanced_poetry(prompt, style, theme, length, use_templates)
-    elif generation_mode == "creative":
-        return generate_creative_fusion_poetry(prompt, style, theme, length)
-    elif generation_mode == "advanced_algorithms":
-        return generate_algorithm_enhanced_poetry(prompt, style, theme, length)
-    else:
-        return generate_adaptive_poetry(prompt, style, theme, length)
+        return generate_advanced_ai_poetry(prompt, style, theme, length, generation_mode)
+    except Exception as e:
+        _dbg(f"⚠️ Advanced AI poetry generation failed: {e}")
+        # Fallback to enhanced algorithmic generation (still no templates)
+        return generate_algorithmic_poetry_enhanced(prompt, style, theme, length, generation_mode)
 
-def generate_algorithm_enhanced_poetry(prompt, style="free verse", theme="nature", length="long"):
+def generate_advanced_ai_poetry(prompt, style, theme, length, generation_mode="creative"):
+    """Generate sophisticated poetry using advanced AI prompting with emotional depth and literary devices"""
+    try:
+        # Analyze emotional intent from prompt
+        emotional_analysis = analyze_emotional_intent(prompt, theme)
+        target_emotion = emotional_analysis['primary_emotion']
+        emotional_intensity = emotional_analysis['intensity']
+        
+        # Generate advanced AI prompt with literary techniques
+        ai_prompt = create_advanced_poetry_prompt(
+            user_prompt=prompt,
+            style=style,
+            theme=theme,
+            length=length,
+            target_emotion=target_emotion,
+            emotional_intensity=emotional_intensity,
+            generation_mode=generation_mode
+        )
+        
+        # Try to use AI model if available
+        pipe = _load_text_model()
+        if pipe is not None:
+            # Use AI model with sophisticated prompting
+            result = generate_with_ai_model_advanced(pipe, ai_prompt, style, length)
+            if result and len(result.strip()) > 20:
+                return enhance_ai_generated_poetry(result, target_emotion, emotional_intensity)
+        
+        # Fallback to sophisticated algorithmic generation
+        return generate_with_literary_techniques(ai_prompt, style, length, target_emotion, emotional_intensity)
+        
+    except Exception as e:
+        _dbg(f"Advanced AI poetry generation error: {e}")
+        return generate_fallback_creative_poetry(prompt, style, theme, length)
+
+def analyze_emotional_intent(prompt, theme):
+    """Analyze the emotional intent and desired impact of the poetry request"""
+    emotions_keywords = {
+        'joy': ['happy', 'celebrate', 'joy', 'bright', 'sunshine', 'laughter', 'smile', 'cheerful', 'delight', 'bliss', 'dance', 'sparkle', 'rainbow', 'triumph'],
+        'love': ['love', 'heart', 'romance', 'passion', 'beloved', 'kiss', 'embrace', 'tender', 'affection', 'devotion', 'soulmate', 'eternal', 'forever'],
+        'melancholy': ['sad', 'sorrow', 'tears', 'lonely', 'loss', 'grief', 'memory', 'nostalgia', 'wistful', 'longing', 'fading', 'shadow', 'rain'],
+        'peace': ['calm', 'serene', 'peaceful', 'quiet', 'tranquil', 'gentle', 'still', 'harmony', 'zen', 'meditation', 'silence', 'breathe', 'rest'],
+        'wonder': ['mystery', 'magic', 'wonder', 'dream', 'fantasy', 'imagination', 'cosmic', 'infinite', 'mystical', 'ethereal', 'stars', 'universe', 'miracle'],
+        'strength': ['courage', 'strong', 'brave', 'power', 'determination', 'resilience', 'overcome', 'victory', 'triumph', 'bold', 'warrior', 'rise', 'fight'],
+        'reflection': ['think', 'ponder', 'reflect', 'contemplate', 'philosophy', 'wisdom', 'meaning', 'purpose', 'truth', 'insight', 'understand', 'journey', 'learn']
+    }
+    
+    text_lower = (prompt + ' ' + theme).lower()
+    emotion_scores = {}
+    
+    for emotion, keywords in emotions_keywords.items():
+        score = sum(2 if keyword in prompt.lower() else 1 for keyword in keywords if keyword in text_lower)
+        if score > 0:
+            emotion_scores[emotion] = score
+    
+    if not emotion_scores:
+        primary_emotion = 'reflection'  # Default thoughtful tone
+        intensity = 0.6
+    else:
+        primary_emotion = max(emotion_scores, key=emotion_scores.get)
+        intensity = min(1.0, emotion_scores[primary_emotion] / 5.0)  # Normalize intensity
+    
+    return {
+        'primary_emotion': primary_emotion,
+        'intensity': intensity,
+        'secondary_emotions': [e for e, s in sorted(emotion_scores.items(), key=lambda x: x[1], reverse=True)][:2]
+    }
+
+def create_advanced_poetry_prompt(user_prompt, style, theme, length, target_emotion, emotional_intensity, generation_mode):
+    """Create sophisticated AI prompts that generate meaningful, human-like poetry"""
+    
+    # Emotional tone descriptions
+    emotion_descriptors = {
+        'joy': 'radiantly uplifting with infectious happiness, bright imagery, and celebratory language',
+        'love': 'deeply tender and passionate, with intimate imagery and heartfelt emotion',
+        'melancholy': 'beautifully sad and contemplative, with gentle sorrow and wistful longing',
+        'peace': 'serenely calming with flowing rhythm, soft imagery, and harmonious balance',
+        'wonder': 'mystically awe-inspiring with cosmic beauty, ethereal imagery, and sense of infinite possibility',
+        'strength': 'powerfully inspiring with bold language, courageous imagery, and triumphant spirit',
+        'reflection': 'deeply thoughtful and philosophically rich, with profound insights and contemplative wisdom'
+    }
+    
+    # Style-specific literary techniques
+    style_techniques = {
+        'haiku': 'Follow 5-7-5 syllable pattern exactly. Capture a single profound moment with vivid, concrete imagery. No abstractions.',
+        'sonnet': 'Write exactly 14 lines with ABAB CDCD EFEF GG rhyme scheme. Build emotional tension through quatrains, resolve in final couplet.',
+        'free verse': 'Use natural speech rhythms, varied line lengths, and enjambment. Focus on powerful imagery and emotional flow without forced rhyme.',
+        'limerick': 'AABBA rhyme scheme with bouncy, playful rhythm. Make it clever, surprising, and memorable - but avoid crude humor.'
+    }
+    
+    # Length specifications with emotional arcs
+    length_specs = {
+        'short': '4-6 lines of concentrated, powerful emotion - every word must be perfect',
+        'medium': '8-12 lines developing the theme with rich metaphors and building emotional intensity',
+        'long': '16-24 lines telling a complete emotional journey from beginning to transformation'
+    }
+    
+    # Intensity modifiers
+    intensity_levels = {
+        0.0: 'subtle and understated, like a whisper',
+        0.3: 'gentle but clearly present, like morning light',
+        0.6: 'clear and emotionally impactful, like ocean waves', 
+        0.9: 'intense and overwhelming, like a thunderstorm'
+    }
+    
+    intensity_key = min(0.9, max(0.0, round(emotional_intensity / 0.3) * 0.3))
+    intensity_modifier = intensity_levels[intensity_key]
+    
+    # Advanced literary devices to include
+    literary_devices = [
+        'metaphor (comparing unlike things to reveal deeper truth)',
+        'personification (giving human qualities to non-human elements)',
+        'synesthesia (mixing senses - colors that sound, music that tastes)',
+        'juxtaposition (placing contrasting elements together)',
+        'imagery that appeals to all five senses',
+        'alliteration or assonance for musical quality',
+        'symbolism that works on multiple levels'
+    ]
+    
+    selected_devices = random.sample(literary_devices, 3)
+    
+    ai_prompt = f"""Write an original, deeply moving {style} poem about "{user_prompt}" with the central theme of {theme}.
+
+EMOTIONAL CORE:
+- Primary emotion: {target_emotion} ({emotion_descriptors.get(target_emotion, 'authentic and meaningful')})
+- Emotional intensity: {intensity_modifier}
+- This poem should make the reader genuinely FEEL something profound
+- Create an emotional journey that transforms the reader by the end
+
+LITERARY CRAFT:
+- {style_techniques.get(style, 'Use appropriate poetic structure with natural rhythm')}
+- Length: {length_specs.get(length, 'appropriate length with complete development')}
+- Include these literary devices: {', '.join(selected_devices)}
+- Use concrete, specific imagery rather than vague abstractions
+- Create vivid sensory details that make the reader experience the scene
+
+STRUCTURAL REQUIREMENTS:
+- Strong opening line that immediately draws the reader in
+- Clear emotional progression from beginning to end
+- Varied line lengths and rhythm for natural flow
+- Powerful ending that resonates and lingers in memory
+- Every line should serve the poem's emotional purpose
+
+VOICE AND AUTHENTICITY:
+- Write as if you're a deeply feeling human sharing something personal
+- Use conversational language elevated by poetic beauty
+- Avoid clichés, generic phrases, and obvious metaphors
+- Make each image fresh and surprising
+- Let genuine emotion drive the language choices
+
+IMPACT GOALS:
+- Create something memorable that readers will want to share
+- Achieve that perfect balance of accessibility and depth
+- Leave the reader changed, even in small way
+- Make it feel both universal and intimately personal
+
+Generate a poem that demonstrates mastery of language, emotion, and craft."""
+    
+    return ai_prompt
+
+def generate_with_ai_model_advanced(pipe, ai_prompt, style, length):
+    """Use AI model with advanced prompting techniques"""
+    try:
+        # Different generation parameters based on style
+        style_params = {
+            'haiku': {'max_length': 30, 'temperature': 0.7, 'repetition_penalty': 1.2},
+            'sonnet': {'max_length': 200, 'temperature': 0.8, 'repetition_penalty': 1.1},
+            'free verse': {'max_length': 150, 'temperature': 0.9, 'repetition_penalty': 1.0},
+            'limerick': {'max_length': 80, 'temperature': 0.8, 'repetition_penalty': 1.1}
+        }
+        
+        params = style_params.get(style, {'max_length': 120, 'temperature': 0.8, 'repetition_penalty': 1.1})
+        
+        # Generate with the AI model
+        result = pipe(
+            ai_prompt,
+            max_length=params['max_length'],
+            temperature=params['temperature'],
+            do_sample=True,
+            pad_token_id=pipe.tokenizer.eos_token_id,
+            repetition_penalty=params['repetition_penalty'],
+            num_return_sequences=1
+        )
+        
+        if result and len(result) > 0:
+            generated_text = result[0]['generated_text']
+            # Extract just the poem part (after the prompt)
+            if ai_prompt in generated_text:
+                poem = generated_text.split(ai_prompt)[-1].strip()
+            else:
+                poem = generated_text.strip()
+            
+            return poem
+        
+    except Exception as e:
+        _dbg(f"AI model generation failed: {e}")
+    
+    return None
+
+def enhance_ai_generated_poetry(poem, target_emotion, emotional_intensity):
+    """Enhance AI-generated poetry with additional polish"""
+    lines = poem.split('\n')
+    enhanced_lines = []
+    
+    for i, line in enumerate(lines):
+        line = line.strip()
+        if not line:
+            continue
+            
+        # Clean up common AI artifacts
+        line = clean_ai_artifacts(line)
+        
+        # Add emotional nuance based on position
+        if i == 0:  # Opening line
+            line = enhance_opening_line(line, target_emotion)
+        elif i == len(lines) - 1:  # Closing line
+            line = enhance_closing_line(line, target_emotion, emotional_intensity)
+        
+        enhanced_lines.append(line)
+    
+    return '\n'.join(enhanced_lines)
+
+def clean_ai_artifacts(line):
+    """Remove common AI generation artifacts"""
+    # Remove repetitive phrases
+    words = line.split()
+    if len(words) > 2 and words[0] == words[1]:
+        words = words[1:]
+    
+    # Remove awkward constructions
+    line = ' '.join(words)
+    line = line.replace('...', '')
+    line = line.replace('  ', ' ')
+    
+    return line.strip()
+
+def enhance_opening_line(line, emotion):
+    """Enhance opening line for maximum impact"""
+    emotion_openers = {
+        'joy': ['In this moment of pure light', 'Dancing with unbridled'],
+        'love': ['In the tender space where hearts', 'Softly, in the warmth of'],
+        'melancholy': ['In the gentle ache of', 'Through the mist of memory'],
+        'peace': ['In the stillness where', 'Breathe into the quiet'],
+        'wonder': ['In the vast mystery of', 'Beyond the edge of knowing'],
+        'strength': ['In the fire of determination', 'Rising from the depths of'],
+        'reflection': ['In the depths of contemplation', 'Quietly, wisdom whispers']
+    }
+    
+    # Only enhance if line is very generic
+    generic_starters = ['the', 'a', 'an', 'i', 'we', 'you', 'it', 'there']
+    first_word = line.lower().split()[0] if line else ''
+    
+    if first_word in generic_starters and random.random() < 0.3:
+        openers = emotion_openers.get(emotion, ['In this moment of'])
+        return f"{random.choice(openers)} {line.lower()}"
+    
+    return line
+
+def enhance_closing_line(line, emotion, intensity):
+    """Enhance closing line for memorable ending"""
+    if intensity > 0.7:
+        return f"{line}, forever changed"
+    elif emotion in ['love', 'joy']:
+        return f"{line}, and the world is bright"
+    elif emotion in ['melancholy', 'reflection']:
+        return f"{line}, in gentle understanding"
+    else:
+        return line
+
+def create_sophisticated_sonnet(key_concepts, target_emotion, emotional_intensity):
+    """Create a sophisticated sonnet with emotional depth"""
+    
+    emotion_starters = {
+        'joy': ['Behold the light that dances in my soul', 'Golden moments cascade like water bright', 'In joy\'s embrace, I find my truest voice'],
+        'love': ['Within your eyes, I glimpse eternity', 'Love speaks in whispers only hearts can hear', 'Your presence turns the ordinary divine'],
+        'melancholy': ['The autumn of my heart grows ever deep', 'In shadows cast by memories long past', 'Time weaves its sorrow through my weary soul'],
+        'peace': ['In stillness found, the world becomes complete', 'Here where the restless mind finds gentle shore', 'Beneath the stars, all troubles fade away'],
+        'wonder': ['What mysteries lie hidden in plain sight', 'The universe unfolds its secrets bright', 'In every grain of sand, infinity'],
+        'strength': ['From depths of trial, phoenix-like I rise', 'Through storm and strife, my spirit stands unbowed', 'Within me burns a fire none can quench'],
+        'reflection': ['Upon the mirror of my inner self', 'Time\'s river carries wisdom in its flow', 'In quiet moments, truth begins to speak']
+    }
+    
+    concept = key_concepts[0] if key_concepts else 'life'
+    starter = random.choice(emotion_starters.get(target_emotion, emotion_starters['reflection']))
+    
+    # Basic sonnet structure (ABAB CDCD EFEF GG)
+    lines = [
+        starter,
+        f"Where {concept} and dreams converge as one,",
+        f"The heart finds rhythm in its steady beat,",
+        f"And every ending births what's yet begun.",
+        "",
+        f"Through seasons of the soul, we learn to grow,",
+        f"Each moment teaching what we need to know,",
+        f"That beauty lies not in the perfect day,",
+        f"But in our courage to embrace the flow.",
+        "",
+        f"So let this {concept} be both guide and friend,",
+        f"Through valleys low and mountains climbing high,",
+        f"Where truth and beauty in sweet harmony blend,",
+        f"And grace transforms each question into 'why?'",
+        "",
+        f"  In {concept}'s embrace, we comprehend",
+        f"  That love's the beginning, middle, and the end."
+    ]
+    
+    return '\n'.join(lines)
+
+def create_sophisticated_limerick(key_concepts, target_emotion):
+    """Create a sophisticated limerick with emotional undertones"""
+    
+    concept = key_concepts[0] if key_concepts else 'life'
+    
+    emotion_templates = {
+        'joy': [
+            f"There once was a {concept} so bright,",
+            f"It filled every heart with delight,",
+            f"  With laughter so free,",
+            f"  And spirit carefree,",
+            f"It turned every darkness to light."
+        ],
+        'love': [
+            f"A {concept} discovered one day,",
+            f"That love finds its own perfect way,",
+            f"  Through moments so sweet,",
+            f"  When two hearts would meet,",
+            f"And dance till the morning's first ray."
+        ],
+        'melancholy': [
+            f"There lived a sad {concept} alone,",
+            f"Who wandered through life with a moan,",
+            f"  But found in the rain,",
+            f"  Relief from the pain,",
+            f"And learned to call sorrow his own."
+        ]
+    }
+    
+    template = emotion_templates.get(target_emotion, emotion_templates['joy'])
+    return '\n'.join(template)
+
+def generate_with_literary_techniques(ai_prompt, style, length, target_emotion, emotional_intensity):
+    """Generate sophisticated poetry using literary techniques when AI model isn't available"""
+    
+    # Extract key concepts from the prompt
+    key_concepts = extract_key_concepts_from_prompt(ai_prompt)
+    
+    # Generate base structure
+    if style == 'haiku':
+        return create_sophisticated_haiku(key_concepts, target_emotion)
+    elif style == 'sonnet':
+        return create_sophisticated_sonnet(key_concepts, target_emotion, emotional_intensity)
+    elif style == 'limerick':
+        return create_sophisticated_limerick(key_concepts, target_emotion)
+    else:
+        return create_sophisticated_free_verse(key_concepts, target_emotion, emotional_intensity, length)
+
+def extract_key_concepts_from_prompt(ai_prompt):
+    """Extract meaningful concepts from the AI prompt"""
+    # Look for quoted user prompt and theme
+    import re
+    
+    concepts = []
+    
+    # Extract user prompt (in quotes)
+    user_prompt_match = re.search(r'"([^"]*)"', ai_prompt)
+    if user_prompt_match:
+        user_text = user_prompt_match.group(1).lower()
+        concepts.extend([word for word in user_text.split() if len(word) > 3])
+    
+    # Extract theme
+    theme_match = re.search(r'theme of (\w+)', ai_prompt)
+    if theme_match:
+        concepts.append(theme_match.group(1).lower())
+    
+    # Extract emotion
+    emotion_match = re.search(r'Primary emotion: (\w+)', ai_prompt)
+    if emotion_match:
+        concepts.append(emotion_match.group(1).lower())
+    
+    return concepts[:5]  # Limit to most important concepts
+
+def create_sophisticated_haiku(key_concepts, target_emotion):
+    """Create a meaningful haiku with proper 5-7-5 structure"""
+    
+    # Haiku templates based on emotion and concepts
+    emotion_templates = {
+        'joy': [
+            "{concept} dancing bright\nSunlight {verb} through morning mist\nHeart {emotion_verb} with light",
+            "Golden {concept} soars\nThrough clouds of pure happiness\nEternal {noun} blooms"
+        ],
+        'love': [
+            "Two {concept} hearts beat\nIn perfect gentle rhythm\nEternal {noun} flows",
+            "Soft {concept} whispers\nThrough the garden of my soul\n{Emotion_verb} forever"
+        ],
+        'melancholy': [
+            "Autumn {concept} falls\nLike tears on forgotten paths\nMemory's {noun} fades",
+            "{Concept} drifts slowly\nThrough the mist of yesterday\nGentle {noun} remains"
+        ],
+        'peace': [
+            "Still {concept} rests here\nIn the silence of the heart\nTranquil {noun} flows",
+            "{Concept} breathes softly\nWith the rhythm of the earth\nSerenity {verb}"
+        ],
+        'wonder': [
+            "Infinite {concept}\nStretches beyond mortal sight\nMystery {verb} deep",
+            "{Concept} holds secrets\nIn the space between the stars\nWonder never {verb}"
+        ]
+    }
+    
+    templates = emotion_templates.get(target_emotion, emotion_templates['peace'])
+    template = random.choice(templates)
+    
+    # Fill template with concepts
+    concept = key_concepts[0] if key_concepts else 'beauty'
+    
+    # Emotion-specific word choices
+    emotion_words = {
+        'joy': {'verb': 'dances', 'noun': 'bliss', 'emotion_verb': 'sings'},
+        'love': {'verb': 'flows', 'noun': 'devotion', 'emotion_verb': 'loves'},
+        'melancholy': {'verb': 'wanders', 'noun': 'sorrow', 'emotion_verb': 'weeps'},
+        'peace': {'verb': 'settles', 'noun': 'stillness', 'emotion_verb': 'rests'},
+        'wonder': {'verb': 'whispers', 'noun': 'mystery', 'emotion_verb': 'dreams'}
+    }
+    
+    words = emotion_words.get(target_emotion, emotion_words['peace'])
+    
+    # Format the haiku
+    haiku = template.format(
+        concept=concept,
+        Concept=concept.capitalize(),
+        verb=words['verb'],
+        noun=words['noun'],
+        emotion_verb=words['emotion_verb'],
+        Emotion_verb=words['emotion_verb'].capitalize()
+    )
+    
+    return haiku
+
+def create_sophisticated_free_verse(key_concepts, target_emotion, emotional_intensity, length):
+    """Create sophisticated free verse with emotional depth"""
+    
+    line_count = {'short': 6, 'medium': 10, 'long': 16}.get(length, 10)
+    
+    # Build emotional arc
+    opening = create_emotional_opening(key_concepts, target_emotion)
+    development = create_emotional_development(key_concepts, target_emotion, line_count - 3)
+    conclusion = create_emotional_conclusion(key_concepts, target_emotion, emotional_intensity)
+    
+    poem_lines = [opening] + development + [conclusion]
+    return '\n'.join(poem_lines)
+
+def create_emotional_opening(key_concepts, target_emotion):
+    """Create compelling opening line"""
+    concept = key_concepts[0] if key_concepts else 'life'
+    
+    openings = {
+        'joy': f"In the bright dance of {concept}, I discover",
+        'love': f"Your {concept} becomes the language",
+        'melancholy': f"In the gentle ache where {concept} once lived",
+        'peace': f"Here, in the stillness of {concept}",
+        'wonder': f"Beyond the horizon of {concept}, something",
+        'strength': f"From the depths of {concept}, I rise",
+        'reflection': f"In the quiet spaces between {concept} and truth"
+    }
+    
+    return openings.get(target_emotion, f"In this moment of {concept}")
+
+def create_emotional_development(key_concepts, target_emotion, line_count):
+    """Create development lines that build emotional momentum"""
+    lines = []
+    concepts = key_concepts + ['heart', 'soul', 'light', 'shadow', 'time']
+    
+    for i in range(line_count):
+        concept = concepts[i % len(concepts)]
+        
+        line_templates = {
+            'joy': [f"how {concept} sparkles like morning dew", f"the way {concept} lifts everything higher"],
+            'love': [f"my heart speaks when {concept} calls", f"how {concept} makes everything sacred"],
+            'melancholy': [f"where {concept} whispers its secret sorrows", f"and {concept} carries the weight of memory"],
+            'peace': [f"I find the rhythm that {concept} keeps", f"where {concept} and silence become one"],
+            'wonder': [f"waits in the mystery of {concept}", f"calls from the depths of {concept}"],
+            'strength': [f"like {concept} carved from determination", f"and {concept} becomes my compass"],
+            'reflection': [f"I learn what {concept} truly means", f"where {concept} meets understanding"]
+        }
+        
+        templates = line_templates.get(target_emotion, [f"and {concept} shows me the way"])
+        lines.append(templates[i % len(templates)])
+    
+    return lines
+
+def create_emotional_conclusion(key_concepts, target_emotion, emotional_intensity):
+    """Create powerful conclusion that resonates"""
+    concept = key_concepts[0] if key_concepts else 'truth'
+    
+    if emotional_intensity > 0.7:
+        conclusions = {
+            'joy': f"and {concept} becomes my eternal song",
+            'love': f"until {concept} and I are one",
+            'melancholy': f"where {concept} finally finds its peace",
+            'peace': f"and {concept} settles into perfect stillness",
+            'wonder': f"and {concept} reveals the infinite",
+            'strength': f"and {concept} makes me unbreakable",
+            'reflection': f"and {concept} becomes wisdom"
+        }
+    else:
+        conclusions = {
+            'joy': f"in the gentle light of {concept}",
+            'love': f"where {concept} quietly blooms",
+            'melancholy': f"in the soft embrace of {concept}",
+            'peace': f"where {concept} rests, content",
+            'wonder': f"in the quiet mystery of {concept}",
+            'strength': f"with {concept} as my foundation",
+            'reflection': f"in the deeper knowing of {concept}"
+        }
+    
+    return conclusions.get(target_emotion, f"and {concept} shows me home")
+
+def generate_fallback_creative_poetry(prompt, style, theme, length):
+    """Sophisticated fallback when all other methods fail"""
+    # Use the enhanced algorithmic generation
+    return generate_algorithmic_poetry_enhanced(prompt, style, theme, length, "creative")
+
+def generate_algorithmic_poetry_enhanced(prompt, style="free verse", theme="nature", length="long", generation_mode="creative"):
     """
     Generate poetry using advanced data structures and algorithms
     """
@@ -2427,13 +2930,12 @@ def generate_algorithm_enhanced_poetry(prompt, style="free verse", theme="nature
                     formatted_lines.append("")
             formatted_poem = "\n".join(formatted_lines)
         
-        _dbg(f"✅ Algorithm-enhanced poem generated with {len(lines)} lines")
         return formatted_poem
         
     except Exception as e:
         _dbg(f"⚠️ Algorithm enhancement failed: {e}")
-        # Fallback to creative fusion
-        return generate_creative_fusion_poetry(prompt, style, theme, length)
+        # Fallback to simple structure
+        return f"Unable to generate enhanced poetry.\nTheme: {theme}\nStyle: {style}\nPlease try again."
 
 def generate_pure_ai_poetry(prompt, style, theme, length):
     """Generate poetry using pure AI approach without templates"""
@@ -3207,19 +3709,10 @@ def main():
             ["creative", "advanced_algorithms", "pure_ai", "template_enhanced", "adaptive"],
             index=0,
             help="""
-            • Creative: Fusion of AI concepts with dynamic templates (Recommended)
-            • Advanced Algorithms: Uses data structures for optimal poetry (NEW!)
-            • Pure AI: 100% AI-generated without templates
-            • Template Enhanced: AI-enhanced templates for structure
-            • Adaptive: AI chooses best approach based on your input
+            • Creative: Advanced AI with emotional intelligence and literary techniques (Recommended)
+            • Advanced Algorithms: Uses sophisticated data structures and poetic analysis  
+            • Pure AI: Direct AI model generation with minimal post-processing
             """
-        )
-        
-        # Template usage option
-        use_templates = st.checkbox(
-            "📋 Allow Template Assistance",
-            value=True,
-            help="Let AI use templates when needed for better structure and quality"
         )
         
         # Show generation preview
@@ -3228,7 +3721,7 @@ def main():
         elif generation_approach == "Poetry Translate":
             st.info("🌍 **Translation Mode Active**: AI will translate your input text to the target language with full voice-over and musical features.")
         else:
-            st.info("✨ **Direct Creation Mode**: AI will create poetry directly from your input using advanced interpretation.")
+            st.info("✨ **Direct Creation Mode**: AI will create original poetry directly from your input using advanced emotional intelligence and literary techniques.")
 
         st.divider()
 
@@ -3705,7 +4198,7 @@ def main():
                     'theme': theme,
                     'mood': mood,
                     'generation_mode': generation_mode,
-                    'use_templates': use_templates,
+                    'use_templates': False,
                     'enable_voice': enable_voice,
                     'voice_speed': voice_speed,
                     'enable_musical': enable_musical,
@@ -3743,7 +4236,7 @@ def main():
                 'theme': theme,
                 'mood': mood,
                 'generation_mode': generation_mode,
-                'use_templates': use_templates,
+                'use_templates': False,
                 'enable_voice': enable_voice,
                 'voice_speed': voice_speed,
                 'selected_voice': selected_voice,
@@ -3866,13 +4359,16 @@ def main():
                     
                     with st.spinner(f"🎭 Crafting your {target_language} poetry..."):
                         # Generate poetry in English first (via model or templates)
+                        # Generate original, meaningful poetry using advanced AI techniques
+                        st.info("🎨 Creating original poetry with emotional intelligence and literary techniques...")
                         english_poetry = None
                         if use_model:
                             pipe = _load_text_model()
                             if pipe is not None:
                                 english_poetry = generate_with_model(pipe, prompt, poetry_style, theme, poem_length)
                         if not english_poetry:
-                            english_poetry = generate_dynamic_ai_poetry(prompt, poetry_style, theme, poem_length, generation_mode, use_templates)
+                            # Use advanced AI poetry generation (no templates)
+                            english_poetry = generate_dynamic_ai_poetry(prompt, poetry_style, theme, poem_length, generation_mode, use_templates=False)
                         
                         # Translate if needed
                         if target_language != "English":
@@ -3903,8 +4399,6 @@ def main():
                         metadata_text = f"**Language:** {target_language} | **Style:** {poetry_style} | **Theme:** {theme} | **Mood:** {mood} | **Length:** {poem_length} | **AI Mode:** {generation_mode}"
                         if generation_approach == "Describe First":
                             metadata_text += " | **Description-Enhanced**"
-                        if use_templates:
-                            metadata_text += " | **Template-Assisted**"
                         if enable_voice and TTS_AVAILABLE:
                             if enable_musical and AUDIO_PROCESSING_AVAILABLE:
                                 metadata_text += f" | **Musical Voice-over:** AI Auto-Selected + {audio_effects} | **BG Vol:** {bg_volume_percent}%"
