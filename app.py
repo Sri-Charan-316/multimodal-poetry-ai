@@ -872,6 +872,104 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+# ----------------------------------------------------------------------------
+# Language Registry: India-focused expansion with graceful fallbacks
+# ----------------------------------------------------------------------------
+def _builtin_language_registry():
+        """Return a list of language entries with optional translate/TTS/ASR codes.
+        A language entry is a dict like:
+        { 'name': 'Hindi', 'region': 'India', 'code_translate': 'hi', 'code_tts': 'hi', 'code_asr': 'hi-IN' }
+        Many entries intentionally omit codes so app can still handle text-only generation.
+        """
+        base = [
+            # Core global set (existing)
+            {'name': 'English', 'region': 'Global', 'code_translate': 'en', 'code_tts': 'en', 'code_asr': 'en-US'},
+            {'name': 'Spanish', 'region': 'Global', 'code_translate': 'es', 'code_tts': 'es', 'code_asr': 'es-ES'},
+            {'name': 'French', 'region': 'Global', 'code_translate': 'fr', 'code_tts': 'fr', 'code_asr': 'fr-FR'},
+            {'name': 'German', 'region': 'Global', 'code_translate': 'de', 'code_tts': 'de', 'code_asr': 'de-DE'},
+            {'name': 'Italian', 'region': 'Global', 'code_translate': 'it', 'code_tts': 'it', 'code_asr': 'it-IT'},
+            {'name': 'Portuguese', 'region': 'Global', 'code_translate': 'pt', 'code_tts': 'pt', 'code_asr': 'pt-PT'},
+            {'name': 'Russian', 'region': 'Global', 'code_translate': 'ru', 'code_tts': 'ru', 'code_asr': 'ru-RU'},
+            {'name': 'Japanese', 'region': 'Global', 'code_translate': 'ja', 'code_tts': 'ja', 'code_asr': 'ja-JP'},
+            {'name': 'Chinese', 'region': 'Global', 'code_translate': 'zh-CN', 'code_tts': 'zh-CN', 'code_asr': 'zh-CN'},
+            {'name': 'Arabic', 'region': 'Global', 'code_translate': 'ar', 'code_tts': 'ar', 'code_asr': 'ar-SA'},
+
+            # India (Scheduled + widely spoken) — codes filled where commonly supported
+            {'name': 'Hindi', 'region': 'India', 'code_translate': 'hi', 'code_tts': 'hi', 'code_asr': 'hi-IN'},
+            {'name': 'Bengali', 'region': 'India', 'code_translate': 'bn', 'code_tts': 'bn', 'code_asr': 'bn-IN'},
+            {'name': 'Telugu', 'region': 'India', 'code_translate': 'te', 'code_tts': 'te', 'code_asr': 'te-IN'},
+            {'name': 'Marathi', 'region': 'India', 'code_translate': 'mr', 'code_tts': 'mr', 'code_asr': 'mr-IN'},
+            {'name': 'Tamil', 'region': 'India', 'code_translate': 'ta', 'code_tts': 'ta', 'code_asr': 'ta-IN'},
+            {'name': 'Urdu', 'region': 'India', 'code_translate': 'ur', 'code_tts': 'ur', 'code_asr': 'ur-IN'},
+            {'name': 'Gujarati', 'region': 'India', 'code_translate': 'gu', 'code_tts': 'gu', 'code_asr': 'gu-IN'},
+            {'name': 'Kannada', 'region': 'India', 'code_translate': 'kn', 'code_tts': 'kn', 'code_asr': 'kn-IN'},
+            {'name': 'Odia', 'region': 'India', 'code_translate': 'or', 'code_tts': None, 'code_asr': 'or-IN'},
+            {'name': 'Malayalam', 'region': 'India', 'code_translate': 'ml', 'code_tts': 'ml', 'code_asr': 'ml-IN'},
+            {'name': 'Punjabi', 'region': 'India', 'code_translate': 'pa', 'code_tts': None, 'code_asr': 'pa-IN'},
+            {'name': 'Assamese', 'region': 'India', 'code_translate': 'as', 'code_tts': None, 'code_asr': 'as-IN'},
+            {'name': 'Sanskrit', 'region': 'India', 'code_translate': 'sa', 'code_tts': None, 'code_asr': 'sa-IN'},
+            {'name': 'Nepali', 'region': 'India', 'code_translate': 'ne', 'code_tts': 'ne', 'code_asr': 'ne-NP'},
+            {'name': 'Sindhi', 'region': 'India', 'code_translate': 'sd', 'code_tts': None, 'code_asr': 'sd-IN'},
+            {'name': 'Kashmiri', 'region': 'India', 'code_translate': 'ks', 'code_tts': None, 'code_asr': 'ks-IN'},
+            {'name': 'Konkani', 'region': 'India', 'code_translate': None, 'code_tts': None, 'code_asr': 'kok-IN'},
+            {'name': 'Meitei (Manipuri)', 'region': 'India', 'code_translate': 'mni-Mtei', 'code_tts': None, 'code_asr': 'mni-IN'},
+
+            # Widely spoken non-scheduled/regionals (names only; codes may be absent)
+            {'name': 'Bhojpuri', 'region': 'India', 'code_translate': None, 'code_tts': None, 'code_asr': None},
+            {'name': 'Magahi', 'region': 'India', 'code_translate': None, 'code_tts': None, 'code_asr': None},
+            {'name': 'Awadhi', 'region': 'India', 'code_translate': None, 'code_tts': None, 'code_asr': None},
+            {'name': 'Chhattisgarhi', 'region': 'India', 'code_translate': None, 'code_tts': None, 'code_asr': None},
+            {'name': 'Haryanvi', 'region': 'India', 'code_translate': None, 'code_tts': None, 'code_asr': None},
+            {'name': 'Rajasthani', 'region': 'India', 'code_translate': None, 'code_tts': None, 'code_asr': None},
+            {'name': 'Marwari', 'region': 'India', 'code_translate': None, 'code_tts': None, 'code_asr': None},
+            {'name': 'Garhwali', 'region': 'India', 'code_translate': None, 'code_tts': None, 'code_asr': None},
+            {'name': 'Kumaoni', 'region': 'India', 'code_translate': None, 'code_tts': None, 'code_asr': None},
+            {'name': 'Tulu', 'region': 'India', 'code_translate': None, 'code_tts': None, 'code_asr': None},
+            {'name': 'Kokborok (Tripuri)', 'region': 'India', 'code_translate': None, 'code_tts': None, 'code_asr': None},
+            {'name': 'Mizo (Lushai)', 'region': 'India', 'code_translate': None, 'code_tts': None, 'code_asr': None},
+            {'name': 'Khasi', 'region': 'India', 'code_translate': None, 'code_tts': None, 'code_asr': None},
+            {'name': 'Garo', 'region': 'India', 'code_translate': None, 'code_tts': None, 'code_asr': None},
+            {'name': 'Lepcha', 'region': 'India', 'code_translate': None, 'code_tts': None, 'code_asr': None},
+            {'name': 'Bhutia (Sikkimese)', 'region': 'India', 'code_translate': None, 'code_tts': None, 'code_asr': None},
+            {'name': 'Ladakhi (Bhoti)', 'region': 'India', 'code_translate': None, 'code_tts': None, 'code_asr': None},
+            {'name': 'Gondi', 'region': 'India', 'code_translate': None, 'code_tts': None, 'code_asr': None},
+            {'name': 'Halbi', 'region': 'India', 'code_translate': None, 'code_tts': None, 'code_asr': None},
+            {'name': 'Kodava (Coorgi)', 'region': 'India', 'code_translate': None, 'code_tts': None, 'code_asr': None},
+            {'name': 'Ho', 'region': 'India', 'code_translate': None, 'code_tts': None, 'code_asr': None},
+            {'name': 'Mundari', 'region': 'India', 'code_translate': None, 'code_tts': None, 'code_asr': None},
+            {'name': 'Kurukh (Oraon)', 'region': 'India', 'code_translate': None, 'code_tts': None, 'code_asr': None},
+            {'name': 'Angika', 'region': 'India', 'code_translate': None, 'code_tts': None, 'code_asr': None},
+            {'name': 'Saurashtra', 'region': 'India', 'code_translate': None, 'code_tts': None, 'code_asr': None},
+            {'name': 'Sylheti', 'region': 'India', 'code_translate': None, 'code_tts': None, 'code_asr': None},
+            {'name': 'Pahari-Pothwari', 'region': 'India', 'code_translate': None, 'code_tts': None, 'code_asr': None},
+        ]
+        # Keep alphabetical for nicer UX
+        return sorted(base, key=lambda x: x['name'].lower())
+
+def load_language_registry():
+        """Load registry from assets/indian_languages.json if present; else builtin."""
+        try:
+            from pathlib import Path
+            p = Path('assets/indian_languages.json')
+            if p.exists():
+                with open(p, 'r', encoding='utf-8') as f:
+                    import json
+                    data = json.load(f)
+                    if isinstance(data, list) and data:
+                        return sorted(data, key=lambda x: str(x.get('name','')).lower())
+        except Exception:
+            pass
+        return _builtin_language_registry()
+
+def get_language_by_name(name: str) -> Optional[Dict[str, Any]]:
+        for item in load_language_registry():
+            if item.get('name') == name:
+                return item
+        return None
+
+def get_all_language_names() -> List[str]:
+        return [x.get('name') for x in load_language_registry()]
+
 # Simple inline SVGs for cartoon elements
 def svg_quill(size=40):
         return f'''
@@ -1146,27 +1244,11 @@ def translate_text(text, target_language):
     """Translate text to target language using deep-translator"""
     try:
         from deep_translator import GoogleTranslator
-        
-        lang_codes = {
-            "English": "en",
-            "Spanish": "es", 
-            "French": "fr",
-            "German": "de",
-            "Italian": "it",
-            "Portuguese": "pt",
-            "Russian": "ru",
-            "Japanese": "ja",
-            "Chinese": "zh-CN",
-            "Arabic": "ar",
-            "Hindi": "hi",
-            "Telugu": "te",
-            "Malayalam": "ml",
-            "Kannada": "kn",
-            "Tamil": "ta",
-        }
-        
-        if target_language != "English" and target_language in lang_codes:
-            translator = GoogleTranslator(source='en', target=lang_codes[target_language])
+        # Resolve language code from registry (falls back to English if missing)
+        lang = get_language_by_name(target_language) or {}
+        code = lang.get('code_translate')
+        if target_language != "English" and code:
+            translator = GoogleTranslator(source='en', target=code)
             translated = translator.translate(text)
             return translated
         return text
@@ -1521,7 +1603,7 @@ def detect_poetry_theme(text):
     
     return detected_theme
 
-def create_musical_poetry_audio(text, language="en", speed=1.0, theme=None, audio_effects="enhance", bg_volume_percent=40, voice_type="neutral"):
+def create_musical_poetry_audio(text, language="English", speed=1.0, theme=None, audio_effects="enhance", bg_volume_percent=40, voice_type="neutral"):
     """Generate enhanced musical audio from text with background music and effects"""
     if not TTS_AVAILABLE:
         return None
@@ -1534,14 +1616,8 @@ def create_musical_poetry_audio(text, language="en", speed=1.0, theme=None, audi
         else:
             _dbg(f"🎨 Using specified theme: {theme}")
         
-        # Map language names to gTTS language codes
-        lang_mapping = {
-            "English": "en", "Spanish": "es", "French": "fr", 
-            "German": "de", "Italian": "it", "Portuguese": "pt",
-            "Russian": "ru", "Japanese": "ja", "Chinese": "zh-CN",
-            "Arabic": "ar", "Hindi": "hi", "Telugu": "te",
-            "Malayalam": "ml", "Kannada": "kn", "Tamil": "ta",
-        }
+        # Resolve TTS language code via registry (fallback to English)
+        lang_item = get_language_by_name(language) or {}
 
         # Voice type mapping for different TLD (Top Level Domain) for gTTS
         voice_mapping = {
@@ -1551,8 +1627,7 @@ def create_musical_poetry_audio(text, language="en", speed=1.0, theme=None, audi
             "female_2": {"tld": "ca"},
             "neutral": {"tld": "com"}
         }
-
-        lang_code = lang_mapping.get(language, "en")
+        lang_code = lang_item.get('code_tts') or "en"
         voice_config = voice_mapping.get(voice_type, voice_mapping["neutral"])
 
         # Clean text for TTS
@@ -2979,11 +3054,13 @@ def main():
         use_model = st.checkbox("🧠 Use AI Model (beta)", value=True,  # Default to True for better poetry
                                 help="Generate text with a small multilingual model (mT5-small). Creates more personalized, unique poems!")
 
-        # Language selection
+        # Language selection (searchable)
+        lang_names = get_all_language_names()
         target_language = st.selectbox(
             "🌍 Target Language:",
-          ["English", "Spanish", "French", "German", "Italian", 
-           "Portuguese", "Russian", "Japanese", "Chinese", "Arabic", "Hindi", "Telugu", "Malayalam", "Kannada", "Tamil"]
+            options=lang_names,
+            index=(lang_names.index("English") if "English" in lang_names else 0),
+            help="Choose any supported language. Type to search."
         )
 
         # Poetry style
@@ -3030,10 +3107,17 @@ def main():
         # Show translation-specific settings if in translation mode
         if st.session_state.translation_mode:
             st.markdown("#### 🌍 Translation Settings")
+            lang_names = get_all_language_names()
+            # Prefer a non-English default if available
+            default_idx = 0
+            for pref in ("Hindi", "Tamil", "Telugu", "Malayalam", "Kannada", "Bengali"):
+                if pref in lang_names:
+                    default_idx = lang_names.index(pref)
+                    break
             target_language = st.selectbox(
                 "🗣️ Target Language:",
-                ["Spanish", "French", "German", "Italian", "Portuguese", "Dutch", "Japanese", "Chinese", "Korean", "Arabic", "Russian", "Hindi", "Malayalam", "Kannada", "Tamil"],
-                index=0,
+                options=lang_names,
+                index=default_idx,
                 help="Choose the language to translate your text into"
             )
             
