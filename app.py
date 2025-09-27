@@ -11,6 +11,7 @@ import logging
 import hashlib
 import re
 import urllib.request
+from streamlit.components.v1 import html as st_html
 try:
     from gtts import gTTS
     TTS_AVAILABLE = True
@@ -1240,6 +1241,78 @@ def _dbg(msg: str):
         # In early import phases or if session state isn't ready, skip debug logs
         pass
 
+def get_tts_lang_code(language_name: str) -> str:
+        """Resolve a gTTS language code from the registry with sensible fallbacks."""
+        try:
+                lang_item = get_language_by_name(language_name) or {}
+                code = lang_item.get('code_tts')
+                if code:
+                        return code
+        except Exception:
+                pass
+        # Minimal hard fallback for a few known names
+        basic = {
+                "English": "en", "Spanish": "es", "French": "fr", "German": "de", "Italian": "it",
+                "Portuguese": "pt", "Russian": "ru", "Japanese": "ja", "Chinese": "zh-CN", "Arabic": "ar",
+                "Hindi": "hi", "Telugu": "te", "Malayalam": "ml", "Kannada": "kn", "Tamil": "ta",
+                "Bengali": "bn", "Marathi": "mr", "Gujarati": "gu", "Urdu": "ur",
+        }
+        return basic.get(language_name, "en")
+
+def render_browser_tts(text: str, language_name: str, speed: float = 1.0, title: str = "Try browser voice (fallback)"):
+        """Client-side TTS using Web Speech API as a fallback when server TTS fails.
+        This runs in the user's browser and doesn't require server audio files.
+        """
+        if not text or not text.strip():
+                return
+        # Try to map to a BCP-47 tag for better voice selection
+        code = get_tts_lang_code(language_name)
+        # Prefer region-specific tags for some languages
+        bcp47_map = {
+                'en': 'en-US', 'hi': 'hi-IN', 'te': 'te-IN', 'ta': 'ta-IN', 'ml': 'ml-IN', 'kn': 'kn-IN', 'ur': 'ur-IN',
+                'bn': 'bn-IN', 'mr': 'mr-IN', 'gu': 'gu-IN', 'fr': 'fr-FR', 'de': 'de-DE', 'it': 'it-IT', 'pt': 'pt-PT',
+                'ru': 'ru-RU', 'ja': 'ja-JP', 'zh-CN': 'zh-CN', 'ar': 'ar-SA'
+        }
+        lang_tag = bcp47_map.get(code, code)
+        rate = max(0.5, min(2.0, float(speed or 1.0)))
+        escaped = (text.replace("\\", "\\\\").replace("`", "\\`")
+                                        .replace("</", "<\\/").replace("\n", " "))
+        st_html(f"""
+        <div style='margin-top: 0.25rem;'>
+            <button id='speakBtn' style='padding:6px 10px; border-radius:8px; border:1px solid #ddd;'>🗣️ {title}</button>
+            <button id='stopBtn' style='padding:6px 10px; border-radius:8px; border:1px solid #ddd; margin-left:6px;'>⏹️ Stop</button>
+            <small style='margin-left:8px; opacity:0.7'>(uses your device voice)</small>
+        </div>
+        <script>
+            const text = `{escaped}`;
+            const desiredLang = `{lang_tag}`;
+            const rate = {rate};
+            function pickVoice() {{
+                const voices = window.speechSynthesis.getVoices();
+                if (!voices || voices.length === 0) return null;
+                let v = voices.find(v => v.lang && (v.lang === desiredLang || v.lang.startsWith(desiredLang.split('-')[0])));
+                if (!v) v = voices.find(v => v.lang && v.lang.startsWith('en'));
+                return v || voices[0];
+            }}
+            function speak() {{
+                if (!('speechSynthesis' in window)) {{ alert('Speech Synthesis not supported in this browser.'); return; }}
+                const utter = new SpeechSynthesisUtterance(text);
+                const voice = pickVoice();
+                if (voice) utter.voice = voice;
+                utter.lang = desiredLang;
+                utter.rate = rate;
+                window.speechSynthesis.cancel();
+                window.speechSynthesis.speak(utter);
+            }}
+            document.getElementById('speakBtn').onclick = () => {{
+                if (window.speechSynthesis.getVoices().length === 0) {{
+                    window.speechSynthesis.onvoiceschanged = speak;
+                }} else {{ speak(); }}
+            }};
+            document.getElementById('stopBtn').onclick = () => window.speechSynthesis.cancel();
+        </script>
+        """, height=60)
+
 def translate_text(text, target_language):
     """Translate text to target language using deep-translator"""
     try:
@@ -1617,7 +1690,6 @@ def create_musical_poetry_audio(text, language="English", speed=1.0, theme=None,
             _dbg(f"🎨 Using specified theme: {theme}")
         
         # Resolve TTS language code via registry (fallback to English)
-        lang_item = get_language_by_name(language) or {}
 
         # Voice type mapping for different TLD (Top Level Domain) for gTTS
         voice_mapping = {
@@ -1627,7 +1699,7 @@ def create_musical_poetry_audio(text, language="English", speed=1.0, theme=None,
             "female_2": {"tld": "ca"},
             "neutral": {"tld": "com"}
         }
-        lang_code = lang_item.get('code_tts') or "en"
+        lang_code = get_tts_lang_code(language)
         voice_config = voice_mapping.get(voice_type, voice_mapping["neutral"])
 
         # Clean text for TTS
@@ -1752,14 +1824,8 @@ def create_simple_audio(text, language="en", speed=1.0, voice_type="neutral"):
         # Test internet connection
         urllib.request.urlopen('https://www.google.com', timeout=5)
         
-        # Map language names to gTTS language codes
-        lang_mapping = {
-            "English": "en", "Spanish": "es", "French": "fr", 
-            "German": "de", "Italian": "it", "Portuguese": "pt",
-            "Russian": "ru", "Japanese": "ja", "Chinese": "zh-CN",
-            "Arabic": "ar", "Hindi": "hi", "Telugu": "te",
-            "Malayalam": "ml", "Kannada": "kn", "Tamil": "ta",
-        }
+        # Resolve via registry with graceful fallback
+        lang_code = get_tts_lang_code(language)
         
         # Voice type mapping for different TLD (Top Level Domain) for gTTS
         voice_mapping = {
@@ -1770,7 +1836,6 @@ def create_simple_audio(text, language="en", speed=1.0, voice_type="neutral"):
             "neutral": {"tld": "com"}
         }
         
-        lang_code = lang_mapping.get(language, "en")
         voice_config = voice_mapping.get(voice_type, voice_mapping["neutral"])
         
         # Clean text for TTS
@@ -1791,13 +1856,23 @@ def create_simple_audio(text, language="en", speed=1.0, voice_type="neutral"):
         )
         
         # Save to temporary file
-        temp_file = tempfile.mktemp(suffix='.mp3')
-        tts.save(temp_file)
-        
-        if os.path.exists(temp_file) and os.path.getsize(temp_file) > 0:
-            st.success(f"✅ Audio created successfully! Size: {os.path.getsize(temp_file)} bytes")
-            return temp_file
+        temp_dir = tempfile.mkdtemp()
+        temp_file_mp3 = os.path.join(temp_dir, f"tts_basic_{int(time.time())}.mp3")
+        tts.save(temp_file_mp3)
+        if os.path.exists(temp_file_mp3) and os.path.getsize(temp_file_mp3) > 0:
+            st.success(f"✅ Audio created successfully! Size: {os.path.getsize(temp_file_mp3)} bytes")
+            return temp_file_mp3
         else:
+            st.warning("MP3 creation failed, trying WAV fallback")
+            try:
+                if AUDIO_PROCESSING_AVAILABLE:
+                    audio = AudioSegment.from_file(temp_file_mp3)
+                    temp_file_wav = os.path.join(temp_dir, f"tts_basic_{int(time.time())}.wav")
+                    audio.export(temp_file_wav, format='wav')
+                    if os.path.exists(temp_file_wav) and os.path.getsize(temp_file_wav) > 0:
+                        return temp_file_wav
+            except Exception:
+                pass
             st.error("Failed to create audio file")
             return None
             
@@ -1817,14 +1892,8 @@ def create_audio_from_text(text, language="en", speed=1.0, voice_type="neutral")
         return None
 
     try:
-        # Map language names to gTTS language codes and voice options
-        lang_mapping = {
-            "English": "en", "Spanish": "es", "French": "fr", 
-            "German": "de", "Italian": "it", "Portuguese": "pt",
-            "Russian": "ru", "Japanese": "ja", "Chinese": "zh-CN",
-            "Arabic": "ar", "Hindi": "hi", "Telugu": "te",
-            "Malayalam": "ml", "Kannada": "kn", "Tamil": "ta",
-        }
+        # Resolve via registry
+        lang_code = get_tts_lang_code(language)
         
         # Voice type mapping for different TLD (Top Level Domain) for gTTS
         # Different TLDs provide different voices/accents
@@ -1839,7 +1908,6 @@ def create_audio_from_text(text, language="en", speed=1.0, voice_type="neutral")
             "neutral": {"tld": "com", "description": "Default Voice"}
         }
         
-        lang_code = lang_mapping.get(language, "en")
         voice_config = voice_mapping.get(voice_type, voice_mapping["neutral"])
         
         # Clean text for TTS (remove markdown and special characters)
@@ -3246,10 +3314,10 @@ def main():
             # Inline FFmpeg guidance on Windows if needed
             if not AUDIO_PROCESSING_AVAILABLE:
                 st.info("For full musical features, install FFmpeg on Windows: `winget install Gyan.FFmpeg` or download from https://www.gyan.dev/ffmpeg/builds/ and add `bin` to PATH.")
-            
+
             # AI Auto-detection of musical theme
             st.info("🤖 **AI Auto-Theme Detection:** The system will automatically analyze your poetry and select the most appropriate musical theme and variation from our extensive collection:")
-            
+
             with st.expander("🎵 Available Themes & Variations"):
                 st.markdown("""
                 **🕊️ Peaceful** (8 variations): gentle_meadow, soft_rain, morning_mist, calm_ocean, zen_garden, forest_whispers, moonbeam_lullaby, starlight_serenity  
@@ -3261,7 +3329,7 @@ def main():
                 
                 *Each theme now has 8 unique musical variations for incredible diversity! (48 total musical styles)*
                 """)
-            
+
             audio_effects = st.selectbox(
                 "🎛️ Audio Effect:",
                 ["enhance", "reverb", "echo", "none"],
@@ -3277,6 +3345,8 @@ def main():
                 help="Balance background music against the voice-over"
             )
         else:
+            if not AUDIO_PROCESSING_AVAILABLE:
+                st.caption("Musical background disabled because FFmpeg isn't available on this server. Basic voice-over still works; if it fails, use the device voice fallback shown under the poem.")
             musical_theme = None  # Will auto-detect
             audio_effects = "none"
             bg_volume_percent = 40
@@ -3887,6 +3957,10 @@ def main():
                     if played and audio_file and st.session_state.get("verbose_audio", False):
                         st.info(f"📁 Audio file created at: {audio_file}")
                     # Note: Autoplay is often blocked by browsers; keeping UI simple
+                elif enable_voice and not audio_file:
+                    # Offer browser TTS fallback if server TTS failed
+                    st.warning("Server-side audio couldn't be produced (network/FFmpeg limits). You can still listen using your device voice:")
+                    render_browser_tts(final_poetry, target_language, voice_speed, title="Speak with device voice")
                 
                 # Display poem metadata
                 st.markdown(metadata_text)
@@ -3903,6 +3977,8 @@ def main():
                                 if english_audio:
                                     st.markdown("🎵 **Listen to English Version:**")
                                     get_audio_player_html(english_audio)
+                                else:
+                                    render_browser_tts(st.session_state.english_poetry, "English", voice_speed, title="Speak English with device voice")
                         else:
                             st.info("Original English version not available.")
                 
