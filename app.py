@@ -869,7 +869,7 @@ st.markdown(
       .emoji-logo { font-size: 2.4rem; line-height: 1; }
       .app-logo { vertical-align: middle; }
       
-      /* Text Input Styling - Ensure proper visibility */
+      /* Text Input Styling - Clean search appearance */
       .stTextInput > div > div > input {
           color: #000000 !important;
           background-color: #ffffff !important;
@@ -877,7 +877,6 @@ st.markdown(
           border-radius: 8px !important;
           padding: 8px 12px !important;
           font-size: 14px !important;
-          caret-color: #000000 !important;
       }
       
       .stTextInput > div > div > input:focus {
@@ -3646,23 +3645,32 @@ def main():
         use_model = st.checkbox("🧠 Use AI Model (beta)", value=True,  # Default to True for better poetry
                                 help="Generate text with a small multilingual model (mT5-small). Creates more personalized, unique poems!")
 
-        # Language selection (searchable text input)
+        # Language selection (autocomplete search)
         lang_names = get_all_language_names()
-        target_language = st.text_input(
+        
+        # Create a search input that filters languages
+        search_query = st.text_input(
             "🌍 Target Language:",
             value="English",
-            placeholder="Type language name (e.g., Hindi, Spanish, French...)",
-            help="Type any supported language name. Examples: Hindi, Telugu, Tamil, Bengali, Spanish, French, German, etc."
+            placeholder="Start typing to search languages...",
+            help="Type to search and select from available languages",
+            key="main_lang_search"
         )
         
-        # Show language suggestions if typing
-        if target_language and target_language not in lang_names:
-            # Find closest matches
-            matches = [lang for lang in lang_names if target_language.lower() in lang.lower()]
-            if matches:
-                st.info(f"💡 Did you mean: {', '.join(matches[:5])}?")
+        # Filter languages based on search query
+        if search_query:
+            filtered_languages = [lang for lang in lang_names if search_query.lower() in lang.lower()]
+            if filtered_languages and search_query not in lang_names:
+                # Show dropdown of matching languages
+                target_language = st.selectbox(
+                    "Select matching language:",
+                    options=filtered_languages,
+                    key="main_lang_select"
+                )
             else:
-                st.warning(f"⚠️ '{target_language}' not found. Using English as fallback.")
+                target_language = search_query
+        else:
+            target_language = "English"
 
         # Poetry style
         poetry_style = st.selectbox(
@@ -3709,28 +3717,35 @@ def main():
         if st.session_state.translation_mode:
             st.markdown("#### 🌍 Translation Settings")
             lang_names = get_all_language_names()
-            # Prefer Hindi as default for Indian languages
+            # Create autocomplete search for translation language
             default_lang = "Hindi"
             for pref in ("Hindi", "Tamil", "Telugu", "Malayalam", "Kannada", "Bengali"):
                 if pref in lang_names:
                     default_lang = pref
                     break
                     
-            target_language = st.text_input(
+            search_query_trans = st.text_input(
                 "🗣️ Target Language:",
                 value=default_lang,
-                placeholder="Type language name (e.g., Hindi, Tamil, Spanish...)",
-                help="Type the language to translate your text into. Examples: Hindi, Tamil, Telugu, Bengali, Spanish, French, etc."
+                placeholder="Start typing to search languages...",
+                help="Type to search and select translation language",
+                key="trans_lang_search"
             )
             
-            # Show language suggestions for translation mode too
-            if target_language and target_language not in lang_names:
-                matches = [lang for lang in lang_names if target_language.lower() in lang.lower()]
-                if matches:
-                    st.info(f"💡 Did you mean: {', '.join(matches[:5])}?")
+            # Filter languages for translation mode
+            if search_query_trans:
+                filtered_languages_trans = [lang for lang in lang_names if search_query_trans.lower() in lang.lower()]
+                if filtered_languages_trans and search_query_trans not in lang_names:
+                    # Show dropdown of matching languages for translation
+                    target_language = st.selectbox(
+                        "Select matching language:",
+                        options=filtered_languages_trans,
+                        key="trans_lang_select"
+                    )
                 else:
-                    st.warning(f"⚠️ '{target_language}' not found. Using {default_lang} as fallback.")
-                    target_language = default_lang
+                    target_language = search_query_trans
+            else:
+                target_language = default_lang
             
             translation_style = st.selectbox(
                 "🎨 Translation Style:",
