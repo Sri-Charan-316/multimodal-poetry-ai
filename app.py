@@ -889,6 +889,27 @@ st.markdown(
           color: #6c757d !important;
           opacity: 0.7 !important;
       }
+      
+      /* Remove animations from UI cards but preserve text cursor */
+      .stAlert, .stInfo, .stWarning, .stSuccess, .stError {
+          animation: none !important;
+          transition: none !important;
+      }
+      
+      .stSelectbox > div > div > div {
+          animation: none !important;
+          transition: opacity 0.2s ease !important;
+      }
+      
+      /* Disable any blinking/pulsing effects on containers */
+      .element-container, .stMarkdown, .block-container {
+          animation: none !important;
+      }
+      
+      /* Ensure normal cursor behavior in text inputs */
+      .stTextInput input {
+          caret-color: #000000 !important;
+      }
     </style>
     """,
     unsafe_allow_html=True,
@@ -4004,7 +4025,7 @@ def main():
         use_model = st.checkbox("🧠 Use AI Model (experimental)", value=False,  # Default to False for reliability
                                 help="Generate text with a small multilingual model (mT5-small). May be slower and less reliable.")
 
-        # Language selection (autocomplete search)
+        # Language selection (stable autocomplete search)
         lang_names = get_all_language_names()
         
         # Create a search input that filters languages
@@ -4016,16 +4037,18 @@ def main():
             key="main_lang_search"
         )
         
-        # Filter languages based on search query
-        if search_query:
+        # Filter languages based on search query - make it stable
+        if search_query and len(search_query) > 0:
             filtered_languages = [lang for lang in lang_names if search_query.lower() in lang.lower()]
-            if filtered_languages and search_query not in lang_names:
-                # Show dropdown of matching languages
-                target_language = st.selectbox(
-                    "Select matching language:",
-                    options=filtered_languages,
-                    key="main_lang_select"
-                )
+            if len(filtered_languages) > 1 and search_query not in lang_names:
+                # Only show dropdown if there are multiple matches and it's not an exact match
+                with st.container():
+                    target_language = st.selectbox(
+                        "📋 Select from matches:",
+                        options=filtered_languages,
+                        key="main_lang_select",
+                        index=0
+                    )
             else:
                 target_language = search_query
         else:
@@ -4083,6 +4106,7 @@ def main():
                     default_lang = pref
                     break
                     
+            # Create stable autocomplete search for translation language
             search_query_trans = st.text_input(
                 "🗣️ Target Language:",
                 value=default_lang,
@@ -4091,16 +4115,18 @@ def main():
                 key="trans_lang_search"
             )
             
-            # Filter languages for translation mode
-            if search_query_trans:
+            # Filter languages for translation mode - stable version
+            if search_query_trans and len(search_query_trans) > 0:
                 filtered_languages_trans = [lang for lang in lang_names if search_query_trans.lower() in lang.lower()]
-                if filtered_languages_trans and search_query_trans not in lang_names:
-                    # Show dropdown of matching languages for translation
-                    target_language = st.selectbox(
-                        "Select matching language:",
-                        options=filtered_languages_trans,
-                        key="trans_lang_select"
-                    )
+                if len(filtered_languages_trans) > 1 and search_query_trans not in lang_names:
+                    # Only show dropdown if multiple matches and not exact match
+                    with st.container():
+                        target_language = st.selectbox(
+                            "📋 Select from matches:",
+                            options=filtered_languages_trans,
+                            key="trans_lang_select",
+                            index=0
+                        )
                 else:
                     target_language = search_query_trans
             else:
