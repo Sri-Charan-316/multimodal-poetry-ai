@@ -776,10 +776,28 @@ def search_words_by_pattern(pattern: str) -> List[str]:
 # END OF ADVANCED DATA STRUCTURES & ALGORITHMS
 # ============================================================================
 
-# Configure the page
+# Configure the page (try to use a favicon from assets if available)
+try:
+    from pathlib import Path as _Path
+    _page_icon = "🎭"
+    for _cand in (
+        'assets/favicon.png', 'assets/favicon.webp', 'assets/favicon.jpg', 'assets/favicon.jpeg',
+        'assets/logo.png', 'assets/logo.webp', 'assets/logo.jpg', 'assets/logo.jpeg',
+        'assets/poetry_ai_logo.png', 'assets/poetry_ai_logo.webp', 'assets/poetry_ai_logo.jpg', 'assets/poetry_ai_logo.jpeg',
+    ):
+        _p = _Path(_cand)
+        if _p.exists():
+            try:
+                _page_icon = Image.open(str(_p))
+                break
+            except Exception:
+                pass
+except Exception:
+    _page_icon = "🎭"
+
 st.set_page_config(
     page_title="POETRY.AI",
-    page_icon="🎭",
+    page_icon=_page_icon,
     layout="wide"
 )
 
@@ -830,6 +848,29 @@ def inject_theme_css():
                 st.warning(f"Theme load failed: {e}")
 
 inject_theme_css()
+
+# Additional lightweight layout tweaks for spacing and banner styling
+st.markdown(
+    """
+    <style>
+      /* Gentle global heading spacing */
+      .block-container h1 { margin-bottom: 0.25rem; }
+      .block-container h2 { margin-top: 0.75rem; margin-bottom: 0.35rem; }
+      .soft-card { margin-top: 0.5rem; margin-bottom: 1rem; }
+      .section-gap { height: 12px; }
+      .section-gap-lg { height: 22px; }
+      /* Banner visuals */
+      .app-banner-wrap { margin: 0.25rem 0 1rem 0; }
+      .app-banner { width: 100%; max-height: 280px; object-fit: cover; border-radius: 12px; box-shadow: 0 6px 24px rgba(0,0,0,0.08); }
+      /* Header alignment tweaks */
+      .app-header { gap: 10px; }
+      .app-header .title p { margin: 0.1rem 0 0 0; }
+      .emoji-logo { font-size: 2.4rem; line-height: 1; }
+      .app-logo { vertical-align: middle; }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 
 # Simple inline SVGs for cartoon elements
 def svg_quill(size=40):
@@ -907,6 +948,32 @@ def get_app_logo_img_tag(size_px: int = 56) -> str:
         b64 = base64.b64encode(data).decode('ascii')
         return f"<img class=\"app-logo\" alt=\"POETRY.AI Logo\" width=\"{size_px}\" src=\"data:{mime};base64,{b64}\" />"
 
+def get_banner_img_tag(max_height_px: int = 280) -> str:
+        """Return an <img> tag for a banner if assets/banner.* or assets/hero.* exists; otherwise empty.
+        Image is embedded as base64 for portability.
+        """
+        import base64
+        from pathlib import Path
+
+        candidates = [
+            Path('assets/banner.png'), Path('assets/banner.webp'), Path('assets/banner.jpg'), Path('assets/banner.jpeg'),
+            Path('assets/hero.png'),   Path('assets/hero.webp'),   Path('assets/hero.jpg'),   Path('assets/hero.jpeg'),
+        ]
+        data, path = _try_read_file_bytes(candidates)
+        if not data:
+            return ''
+        ext = path.lower()
+        if ext.endswith('.png'):
+            mime = 'image/png'
+        elif ext.endswith('.webp'):
+            mime = 'image/webp'
+        elif ext.endswith('.jpg') or ext.endswith('.jpeg'):
+            mime = 'image/jpeg'
+        else:
+            mime = 'image/png'
+        b64 = base64.b64encode(data).decode('ascii')
+        return f"<img class=\"app-banner\" alt=\"POETRY.AI Banner\" style=\"max-height:{max_height_px}px\" src=\"data:{mime};base64,{b64}\" />"
+
 def ensure_assets_dir():
         from pathlib import Path
         Path('assets').mkdir(parents=True, exist_ok=True)
@@ -955,8 +1022,9 @@ def header_with_mascot():
     col1, col2 = st.columns([5, 1])
 
     with col1:
-        # Use emojis next to the title (brain + pen), ignore image logos
-        icon_html = '<span class="emoji-logo" title="POETRY.AI">🧠✒️</span>'
+        # Use an image logo if available; otherwise fallback to emojis (brain + pen)
+        logo_tag = get_app_logo_img_tag(56)
+        icon_html = logo_tag if logo_tag else '<span class="emoji-logo" title="POETRY.AI">🧠✒️</span>'
         st.markdown(
                     f"""
                     <div class="app-header fade-in">
@@ -969,6 +1037,11 @@ def header_with_mascot():
                     """,
                     unsafe_allow_html=True,
             )
+
+        # Optional banner image if present
+        _banner = get_banner_img_tag()
+        if _banner:
+            st.markdown(f"<div class='app-banner-wrap'>{_banner}</div>", unsafe_allow_html=True)
 
     with col2:
         # History button in top right
